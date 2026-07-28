@@ -4,6 +4,15 @@
   "bbox": [51.0, 22.0, 60.0, 30.0],
   "basemap_zoom": 8,
   "duration": 20,
+  "video_zoom": 9,
+  "lower_third": { "title": "Estrecho de Ormuz", "sub": "El 20% del petróleo mundial pasa por aquí", "in": 1.0, "out": 7.5 },
+  "camera": [
+    { "t": 0.0,  "lon": 55.3, "lat": 26.2, "span": 8.5, "dwell": 1.0 },
+    { "t": 6.0,  "lon": 56.25,"lat": 26.5, "span": 4.0, "dwell": 0.8 },
+    { "t": 12.0, "lon": 56.4, "lat": 26.4, "span": 2.3, "dwell": 1.0 },
+    { "t": 16.0, "lon": 57.0, "lat": 25.5, "span": 3.4, "dwell": 0.6 },
+    { "t": 20.0, "lon": 55.8, "lat": 26.1, "span": 6.5 }
+  ],
   "waypoints": [
     { "t": 0.0,  "lat": 26.8, "lon": 54.5, "zoom": 4.2, "pitch": 0,  "bearing": 0,  "dwell": 0.8 },
     { "t": 6.0,  "lat": 26.6, "lon": 56.3, "zoom": 6.6, "pitch": 45, "bearing": 10, "dwell": 0.7 },
