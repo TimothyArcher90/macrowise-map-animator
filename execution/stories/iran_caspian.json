@@ -1,0 +1,26 @@
+{
+  "_comment": "Iran estilo Caspian Report: base hipsometrica generada + mascara por pais (Iran resaltado, vecinos apagados) + etiquetas de pais + camara lenta.",
+  "bbox": [43.0, 23.0, 64.0, 41.0],
+  "basemap_source": "caspian",
+  "video_zoom": 7,
+  "theme": "light",
+  "highlight": ["Iran"],
+  "duration": 20,
+  "logo": "C:/Users/tante/Downloads/NUEVA IMAGEN MW-20260727T163921Z-1-001/NUEVA IMAGEN MW/LOGO MW NEGRO.png",
+  "lower_third": { "title": "Irán", "sub": "Por qué es tan difícil de derrotar", "in": 1.0, "out": 7.5 },
+  "regions": [],
+  "routes": [],
+  "map_labels": [
+    { "lon": 53.5, "lat": 32.5, "text": "IRÁN",         "size": 1.7, "alpha": 0.85 },
+    { "lon": 44.0, "lat": 32.5, "text": "IRAK",         "size": 0.7, "alpha": 0.6 },
+    { "lon": 46.5, "lat": 25.5, "text": "ARABIA",       "size": 0.7, "alpha": 0.6 },
+    { "lon": 61.5, "lat": 34.0, "text": "AFGANISTÁN",   "size": 0.7, "alpha": 0.6 },
+    { "lon": 58.0, "lat": 39.5, "text": "TURKMENISTÁN", "size": 0.65,"alpha": 0.6 }
+  ],
+  "camera": [
+    { "t": 0.0,  "lon": 54.0, "lat": 32.5, "span": 25.0, "dwell": 1.4 },
+    { "t": 7.0,  "lon": 53.0, "lat": 32.5, "span": 19.0, "dwell": 1.2 },
+    { "t": 14.0, "lon": 52.5, "lat": 33.0, "span": 15.5, "dwell": 1.2 },
+    { "t": 20.0, "lon": 54.0, "lat": 32.0, "span": 21.0 }
+  ]
+}
