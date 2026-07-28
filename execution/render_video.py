@@ -157,6 +157,16 @@ def render(story, fmt, out_mp4):
                         "--bbox", *[str(x) for x in bbox], "--zoom", str(zoom),
                         "--source", source, "--out", bpath], check=True)
 
+    # RELIEVE 3D opcional (hillshade desde elevacion gratis)
+    if story.get("relief"):
+        relief_path = bpath.replace(".png", "_relief.png")
+        if not os.path.exists(relief_path):
+            from relief import add_relief
+            strength = story["relief"] if isinstance(story["relief"], (int, float)) else 0.6
+            print("agregando relieve 3D (hillshade)...")
+            relief_path = add_relief(bpath, bbox, zoom, strength)
+        bpath = relief_path
+
     # logo de marca (watermark) opcional
     logo_img = None
     if story.get("logo") and os.path.exists(story["logo"]):
