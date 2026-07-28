@@ -28,9 +28,12 @@ FPS = 30
 
 COL = {"Iran": (224, 83, 61), "Oman": (78, 201, 176),
        "United Arab Emirates": (232, 185, 58)}
-GOLD = (232, 185, 58)
-INK = (243, 240, 233)
-PANEL = (12, 17, 24)
+# Marca MacroWise
+GOLD = (201, 168, 76)      # #C9A84C
+TEAL = (80, 181, 162)      # #50b5a2
+PURPLE = (115, 36, 125)    # #73247d
+INK = (243, 240, 233)      # texto claro sobre caja oscura
+PANEL = (26, 26, 38)       # #1A1A26 Ink (caja de label)
 
 
 # ---------- easing + camara con micro-pausas ----------
@@ -145,12 +148,22 @@ def render(story, fmt, out_mp4):
     bbox = story["bbox"]
     zoom = story.get("video_zoom", 9)
     dur = story.get("duration", 20)
+    source = story.get("basemap_source", "esri")
+    theme = story.get("theme", "dark")   # 'light' para mapas claros
 
-    bpath = os.path.join(TMP, "basemap_z%d.png" % zoom)
+    bpath = os.path.join(TMP, "basemap_%s_z%d.png" % (source, zoom))
     if not os.path.exists(bpath):
         subprocess.run([sys.executable, os.path.join(HERE, "fetch_basemap.py"),
                         "--bbox", *[str(x) for x in bbox], "--zoom", str(zoom),
-                        "--out", bpath], check=True)
+                        "--source", source, "--out", bpath], check=True)
+
+    # logo de marca (watermark) opcional
+    logo_img = None
+    if story.get("logo") and os.path.exists(story["logo"]):
+        logo_img = Image.open(story["logo"]).convert("RGBA")
+        lw = int(W * 0.16)
+        logo_img = logo_img.resize((lw, int(lw * logo_img.height / logo_img.width)), Image.LANCZOS)
+    focus = story.get("focus")   # {lon,lat,t} punto a resaltar con anillo pulsante
     annotated, proj, bw, bh = bake_annotated(story, bpath, bbox, zoom)
     lon_span = bbox[2] - bbox[0]
 
@@ -191,11 +204,28 @@ def render(story, fmt, out_mp4):
             if -50 < sx < W + 50 and -50 < sy < H + 50:
                 draw_label(d, sx, sy, lb["text"].upper(), alpha, W)
 
+        # marcador de FOCO pulsante (señala un punto, ej. Taiwan)
+        if focus:
+            fa = max(0.0, min(1.0, (t - focus.get("t", 3)) / 0.5))
+            if fa > 0:
+                fx, fy = proj(focus["lon"], focus["lat"])
+                sx = (fx - box[0]) / (box[2] - box[0]) * W
+                sy = (fy - box[1]) / (box[3] - box[1]) * H
+                if -80 < sx < W + 80 and -80 < sy < H + 80:
+                    _draw_focus(d, sx, sy, t, fa)
+
         # lower-third de apertura (titulo + subtitulo), estilo MacroWise
         if lower:
             la = _fade_window(t, lower.get("in", 1.0), lower.get("out", 7.0), 0.6)
             if la > 0:
                 _draw_lower_third(d, W, H, lower, la)
+
+        # logo de marca (esquina inferior derecha)
+        if logo_img is not None:
+            fr2 = frame
+            lx = W - logo_img.width - int(W * 0.03)
+            ly = H - logo_img.height - int(H * 0.04)
+            fr2.alpha_composite(logo_img, (lx, ly))
 
         frame.convert("RGB").save(os.path.join(frames_dir, "f%05d.jpg" % fi), quality=92)
         if fi % 60 == 0:
@@ -205,6 +235,20 @@ def render(story, fmt, out_mp4):
     _encode(frames_dir, out_mp4, W, H)
     shutil.rmtree(frames_dir, ignore_errors=True)
     print("OK video:", out_mp4)
+
+
+def _draw_focus(d, x, y, t, alpha):
+    # anillo doble pulsante en oro (senala el punto) + crosshair sutil
+    import math as _m
+    pulse = 1.0 + 0.18 * _m.sin(t * 3.2)
+    r = int(46 * pulse)
+    d.ellipse([x - r, y - r, x + r, y + r], outline=_a(GOLD, alpha), width=4)
+    d.ellipse([x - r - 10, y - r - 10, x + r + 10, y + r + 10], outline=_a(GOLD, 0.45 * alpha), width=2)
+    d.ellipse([x - 5, y - 5, x + 5, y + 5], fill=_a(GOLD, alpha))
+    for a in (0, 90, 180, 270):
+        dx, dy = int(_m.cos(_m.radians(a)) * (r + 16)), int(_m.sin(_m.radians(a)) * (r + 16))
+        dx2, dy2 = int(_m.cos(_m.radians(a)) * (r + 4)), int(_m.sin(_m.radians(a)) * (r + 4))
+        d.line([x + dx2, y + dy2, x + dx, y + dy], fill=_a(GOLD, alpha), width=3)
 
 
 def _fade_window(t, tin, tout, dur):
@@ -224,18 +268,21 @@ def _draw_lower_third(d, W, H, lower, alpha):
     fS = font(int(W / 60), bold=False)
     x = int(W * 0.06)
     y = int(H * 0.74)
-    # barra de acento
+    # panel de respaldo tenue (Ink MacroWise) para leer sobre cualquier mapa
+    tw = max(d.textlength(title, font=fT), d.textlength(sub, font=fS))
+    d.rectangle([x - 34, y - 20, x + tw + 40, y + int(W / 26) + 44], fill=_a(PANEL, 0.72 * alpha))
+    # barra de acento oro (marca MacroWise)
     d.rectangle([x - 18, y, x - 8, y + int(W / 26) + 34], fill=_a(GOLD, alpha))
     d.text((x, y), title, fill=_a(INK, alpha), font=fT)
-    d.text((x, y + int(W / 26) + 8), sub, fill=_a((210, 205, 195), alpha), font=fS)
+    d.text((x, y + int(W / 26) + 8), sub, fill=_a((214, 209, 200), alpha), font=fS)
 
 
 def _encode(frames_dir, out_mp4, W, H):
     # grado cinematografico: contraste/saturacion suave + sharpen + viñeta + grain fino
-    vf = ("eq=contrast=1.07:saturation=1.14:gamma=0.98,"
-          "unsharp=5:5:0.5:5:5:0.0,"
-          "vignette=PI/5,"
-          "noise=alls=4:allf=t")
+    vf = ("eq=contrast=1.05:saturation=1.10:gamma=0.99,"
+          "unsharp=5:5:0.4:5:5:0.0,"
+          "vignette=PI/6,"
+          "noise=alls=3:allf=t")
     os.makedirs(os.path.dirname(out_mp4), exist_ok=True)
     cmd = ["ffmpeg", "-y", "-framerate", str(FPS),
            "-i", os.path.join(frames_dir, "f%05d.jpg"),

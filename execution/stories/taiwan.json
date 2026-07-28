@@ -1,0 +1,26 @@
+{
+  "_comment": "Taiwan — mapa claro politico (CartoDB Voyager, gratis) estilo Google Maps, con marca MacroWise. Camara: Asia oriental -> push a Taiwan, foco pulsante senalando la isla.",
+  "bbox": [100.0, 12.0, 145.0, 42.0],
+  "basemap_source": "carto",
+  "theme": "light",
+  "video_zoom": 7,
+  "duration": 20,
+  "logo": "C:/Users/tante/Downloads/NUEVA IMAGEN MW-20260727T163921Z-1-001/NUEVA IMAGEN MW/LOGO MW NEGRO.png",
+  "lower_third": { "title": "Taiwán", "sub": "El punto más tenso del Indo-Pacífico", "in": 1.0, "out": 7.5 },
+  "regions": [],
+  "routes": [],
+  "focus": { "lon": 120.95, "lat": 23.75, "t": 4.5 },
+  "camera": [
+    { "t": 0.0,  "lon": 122.0, "lat": 28.5, "span": 42.0, "dwell": 1.0 },
+    { "t": 6.0,  "lon": 121.2, "lat": 24.2, "span": 14.0, "dwell": 0.8 },
+    { "t": 12.0, "lon": 120.95,"lat": 23.75, "span": 5.0, "dwell": 1.3 },
+    { "t": 16.0, "lon": 121.1, "lat": 24.0, "span": 8.0, "dwell": 0.6 },
+    { "t": 20.0, "lon": 122.0, "lat": 27.0, "span": 22.0 }
+  ],
+  "labels": [
+    { "lon": 120.95, "lat": 23.75, "text": "TAIWÁN",           "t": 5 },
+    { "lon": 121.55, "lat": 25.05, "text": "1  TAIPÉI",         "t": 9 },
+    { "lon": 119.3,  "lat": 24.4,  "text": "2  ESTRECHO 180 KM","t": 13 },
+    { "lon": 121.5,  "lat": 22.6,  "text": "3  RUTA DE CHIPS",  "t": 16 }
+  ]
+}

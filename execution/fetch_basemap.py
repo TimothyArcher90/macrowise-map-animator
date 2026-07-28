@@ -16,8 +16,16 @@ import time
 import urllib.request
 
 TILE = 256
-ESRI = ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/"
-        "MapServer/tile/{z}/{y}/{x}")
+SOURCES = {
+    # satelite (Johnny Harris look)
+    "esri": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    # claro politico tipo Google Maps (gratis, sin token) — "linea grafica" clara
+    "carto": "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+    "carto_light": "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png",
+    # oscuro estilo Caspian (gratis, sin token)
+    "carto_dark": "https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png",
+}
+ESRI = SOURCES["esri"]
 
 
 def lonlat_to_tile(lon, lat, z):
@@ -28,8 +36,9 @@ def lonlat_to_tile(lon, lat, z):
     return xt, yt
 
 
-def fetch(bbox, zoom, out_path):
+def fetch(bbox, zoom, out_path, source="esri"):
     from PIL import Image
+    tpl = SOURCES.get(source, ESRI)
     w, s, e, n = bbox
     x0f, y0f = lonlat_to_tile(w, n, zoom)   # NW
     x1f, y1f = lonlat_to_tile(e, s, zoom)   # SE
@@ -43,7 +52,7 @@ def fetch(bbox, zoom, out_path):
     for iy in range(rows):
         for ix in range(cols):
             xt, yt = x0 + ix, y0 + iy
-            url = ESRI.format(z=zoom, x=xt, y=yt)
+            url = tpl.format(z=zoom, x=xt, y=yt)
             data = _get(url)
             tile = Image.open(io.BytesIO(data)).convert("RGB")
             canvas.paste(tile, (ix * TILE, iy * TILE))
@@ -75,9 +84,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bbox", nargs=4, type=float, required=True, metavar=("W", "S", "E", "N"))
     ap.add_argument("--zoom", type=int, default=7)
+    ap.add_argument("--source", default="esri", choices=list(SOURCES))
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    meta = fetch(a.bbox, a.zoom, a.out)
+    meta = fetch(a.bbox, a.zoom, a.out, a.source)
     print(json.dumps(meta))
 
 
