@@ -1,0 +1,26 @@
+{
+  "_comment": "Story-spec del Estrecho de Ormuz. Coordenadas reales del Golfo Persico. Coherente con el video del drawdown (petroleo/guerra). Ajustar map_style al estilo MapTiler que elijas en el panel de GEOlayers.",
+  "map_style": "maptiler://terrain-dark-hillshade",
+  "duration": 20,
+  "waypoints": [
+    { "t": 0.0,  "lat": 26.8, "lon": 54.5, "zoom": 4.2, "pitch": 0,  "bearing": 0,  "dwell": 0.8 },
+    { "t": 6.0,  "lat": 26.6, "lon": 56.3, "zoom": 6.6, "pitch": 45, "bearing": 10, "dwell": 0.7 },
+    { "t": 11.0, "lat": 26.57,"lon": 56.25,"zoom": 7.6, "pitch": 55, "bearing": 15, "dwell": 0.9 },
+    { "t": 16.0, "lat": 25.6, "lon": 57.2, "zoom": 6.8, "pitch": 50, "bearing": 25, "dwell": 0.6 },
+    { "t": 20.0, "lat": 26.2, "lon": 56.0, "zoom": 5.4, "pitch": 25, "bearing": 5 }
+  ],
+  "regions": [
+    { "query": "Iran",  "style": "border-glow" },
+    { "query": "Oman",  "style": "border-glow" },
+    { "query": "United Arab Emirates", "style": "border-glow" }
+  ],
+  "routes": [
+    { "from": [51.0, 29.5], "to": [58.5, 24.5], "style": "tanker", "draw_t": [4, 12] }
+  ],
+  "labels": [
+    { "lat": 26.57, "lon": 56.25, "text": "ESTRECHO DE ORMUZ",        "t": 5 },
+    { "lat": 26.9,  "lon": 56.0,  "text": "1  CIERRE DEL ESTRECHO",   "t": 8 },
+    { "lat": 25.2,  "lon": 57.6,  "text": "2  RUTA DE TANKERS",       "t": 13 },
+    { "lat": 29.3,  "lon": 48.0,  "text": "3  20% DEL CRUDO MUNDIAL", "t": 17 }
+  ]
+}

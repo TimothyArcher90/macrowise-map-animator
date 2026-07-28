@@ -1,0 +1,4 @@
+.tmp/
+*.jsx
+*.mp4
+__pycache__/
