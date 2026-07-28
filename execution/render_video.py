@@ -186,8 +186,12 @@ def render(story, fmt, out_mp4):
     logo_img = None
     if story.get("logo") and os.path.exists(story["logo"]):
         logo_img = Image.open(story["logo"]).convert("RGBA")
-        lw = int(W * 0.16)
+        lw = int(W * 0.105)   # marca de agua discreta
         logo_img = logo_img.resize((lw, int(lw * logo_img.height / logo_img.width)), Image.LANCZOS)
+        # opacidad reducida (watermark profesional, no sticker)
+        op = story.get("logo_opacity", 0.5)
+        a = logo_img.split()[3].point(lambda v: int(v * op))
+        logo_img.putalpha(a)
     focus = story.get("focus")   # {lon,lat,t} punto a resaltar con anillo pulsante
     annotated, proj, bw, bh = bake_annotated(story, bpath, bbox, zoom)
     lon_span = bbox[2] - bbox[0]
@@ -253,14 +257,13 @@ def render(story, fmt, out_mp4):
             if la > 0:
                 _draw_lower_third(d, W, H, lower, la)
 
-        # logo de marca (esquina inferior derecha)
+        # logo de marca de agua (esquina inferior derecha, con padding generoso)
         if logo_img is not None:
-            fr2 = frame
-            lx = W - logo_img.width - int(W * 0.03)
-            ly = H - logo_img.height - int(H * 0.04)
-            fr2.alpha_composite(logo_img, (lx, ly))
+            lx = W - logo_img.width - int(W * 0.035)
+            ly = H - logo_img.height - int(H * 0.05)
+            frame.alpha_composite(logo_img, (lx, ly))
 
-        frame.convert("RGB").save(os.path.join(frames_dir, "f%05d.jpg" % fi), quality=92)
+        frame.convert("RGB").save(os.path.join(frames_dir, "f%05d.jpg" % fi), quality=96)
         if fi % 60 == 0:
             print("  frame %d/%d" % (fi, n))
 
@@ -323,10 +326,11 @@ def _draw_lower_third(d, W, H, lower, alpha):
 
 def _encode(frames_dir, out_mp4, W, H):
     # grado cinematografico: contraste/saturacion suave + sharpen + viñeta + grain fino
-    vf = ("eq=contrast=1.05:saturation=1.10:gamma=0.99,"
-          "unsharp=5:5:0.4:5:5:0.0,"
-          "vignette=PI/6,"
-          "noise=alls=3:allf=t")
+    # grano ESTATICO (sin allf=t) para que no titile al moverse; viñeta suave; grado leve
+    vf = ("eq=contrast=1.03:saturation=1.06:gamma=0.995,"
+          "unsharp=5:5:0.35:5:5:0.0,"
+          "vignette=PI/8,"
+          "noise=alls=2")
     os.makedirs(os.path.dirname(out_mp4), exist_ok=True)
     cmd = ["ffmpeg", "-y", "-framerate", str(FPS),
            "-i", os.path.join(frames_dir, "f%05d.jpg"),
