@@ -1,0 +1,22 @@
+{
+  "_comment": "Nueva York — flyover sobre Manhattan. Ciudad: sin fronteras de pais (muy gruesas); satelite + labels + camara. zoom 14 = detalle de calles.",
+  "bbox": [-74.060, 40.660, -73.860, 40.850],
+  "video_zoom": 14,
+  "duration": 20,
+  "lower_third": { "title": "Nueva York", "sub": "8.3 millones de personas en 5 distritos", "in": 1.0, "out": 7.5 },
+  "regions": [],
+  "routes": [],
+  "camera": [
+    { "t": 0.0,  "lon": -73.970, "lat": 40.758, "span": 0.185, "dwell": 1.0 },
+    { "t": 6.0,  "lon": -74.012, "lat": 40.706, "span": 0.055, "dwell": 0.9 },
+    { "t": 12.0, "lon": -73.968, "lat": 40.782, "span": 0.052, "dwell": 1.0 },
+    { "t": 16.0, "lon": -73.985, "lat": 40.748, "span": 0.120, "dwell": 0.6 },
+    { "t": 20.0, "lon": -73.972, "lat": 40.760, "span": 0.175 }
+  ],
+  "labels": [
+    { "lon": -73.968, "lat": 40.783, "text": "MANHATTAN",              "t": 5 },
+    { "lon": -74.011, "lat": 40.707, "text": "1  DISTRITO FINANCIERO", "t": 8 },
+    { "lon": -73.965, "lat": 40.785, "text": "2  CENTRAL PARK",        "t": 13 },
+    { "lon": -73.985, "lat": 40.748, "text": "3  TIMES SQUARE",        "t": 16 }
+  ]
+}
