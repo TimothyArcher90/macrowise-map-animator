@@ -152,10 +152,25 @@ def render(story, fmt, out_mp4):
     theme = story.get("theme", "dark")   # 'light' para mapas claros
 
     bpath = os.path.join(TMP, "basemap_%s_z%d.png" % (source, zoom))
-    if not os.path.exists(bpath):
+    if source == "caspian":
+        # base de relieve hipsometrico generada (ingenieria inversa Caspian Report)
+        if not os.path.exists(bpath):
+            from caspian_base import build_caspian
+            print("generando base Caspian (relieve hipsometrico)...")
+            build_caspian(bbox, zoom, bpath)
+    elif not os.path.exists(bpath):
         subprocess.run([sys.executable, os.path.join(HERE, "fetch_basemap.py"),
                         "--bbox", *[str(x) for x in bbox], "--zoom", str(zoom),
                         "--source", source, "--out", bpath], check=True)
+
+    # MASCARA POR PAIS opcional (look Caspian): resalta pais, apaga vecinos
+    if story.get("highlight"):
+        hl_path = bpath.replace(".png", "_hl.png")
+        if not os.path.exists(hl_path):
+            from caspian_base import apply_highlight
+            print("aplicando mascara por pais...")
+            hl_path = apply_highlight(bpath, bbox, story["highlight"])
+        bpath = hl_path
 
     # RELIEVE 3D opcional (hillshade desde elevacion gratis)
     if story.get("relief"):
@@ -214,6 +229,14 @@ def render(story, fmt, out_mp4):
             if -50 < sx < W + 50 and -50 < sy < H + 50:
                 draw_label(d, sx, sy, lb["text"].upper(), alpha, W)
 
+        # etiquetas de PAIS (grandes, tracking amplio, sin caja) estilo Caspian
+        for ml in story.get("map_labels", []):
+            mlx, mly = proj(ml["lon"], ml["lat"])
+            sx = (mlx - box[0]) / (box[2] - box[0]) * W
+            sy = (mly - box[1]) / (box[3] - box[1]) * H
+            if -100 < sx < W + 100 and -100 < sy < H + 100:
+                _draw_country(d, sx, sy, ml["text"], ml.get("size", 1.0), W, ml.get("alpha", 0.82))
+
         # marcador de FOCO pulsante (señala un punto, ej. Taiwan)
         if focus:
             fa = max(0.0, min(1.0, (t - focus.get("t", 3)) / 0.5))
@@ -245,6 +268,17 @@ def render(story, fmt, out_mp4):
     _encode(frames_dir, out_mp4, W, H)
     shutil.rmtree(frames_dir, ignore_errors=True)
     print("OK video:", out_mp4)
+
+
+def _draw_country(d, x, y, text, size, W, alpha):
+    # texto de pais grande con tracking amplio, sombra suave, sin caja (look Caspian)
+    txt = " ".join(list(text.upper()))   # letter-spacing manual
+    fs = int(W / 34 * size)
+    f = font(fs, bold=True)
+    tw = d.textlength(txt, font=f)
+    px, py = x - tw / 2, y - fs / 2
+    d.text((px + 2, py + 2), txt, fill=_a((30, 26, 20), 0.35 * alpha), font=f)   # sombra
+    d.text((px, py), txt, fill=_a((60, 50, 38), alpha), font=f)                  # tinta calida
 
 
 def _draw_focus(d, x, y, t, alpha):
