@@ -150,6 +150,9 @@ def render(story, fmt, out_mp4):
     dur = story.get("duration", 20)
     source = story.get("basemap_source", "esri")
     theme = story.get("theme", "dark")   # 'light' para mapas claros
+    tilt = float(story.get("tilt", 0))   # 0 = plano, ~0.6 = 2.5D inclinado
+    sky_top = tuple(story.get("sky_top", [22, 28, 38]))
+    sky_bot = tuple(story.get("sky_bot", [58, 70, 86]))
 
     bpath = os.path.join(TMP, "basemap_%s_z%d.png" % (source, zoom))
     if source == "caspian":
@@ -251,6 +254,11 @@ def render(story, fmt, out_mp4):
                 if -80 < sx < W + 80 and -80 < sy < H + 80:
                     _draw_focus(d, sx, sy, t, fa)
 
+        # INCLINACION 2.5D (rig rotation_x del manual GeoLayers) — el mapa se acuesta
+        if tilt > 0:
+            frame = apply_tilt(frame, W, H, tilt, sky_top, sky_bot)
+            d = ImageDraw.Draw(frame)
+
         # lower-third de apertura (titulo + subtitulo), estilo MacroWise
         if lower:
             la = _fade_window(t, lower.get("in", 1.0), lower.get("out", 7.0), 0.6)
@@ -271,6 +279,40 @@ def render(story, fmt, out_mp4):
     _encode(frames_dir, out_mp4, W, H)
     shutil.rmtree(frames_dir, ignore_errors=True)
     print("OK video:", out_mp4)
+
+
+def _find_coeffs(dst, src):
+    # coeffs PIL PERSPECTIVE que mapean output(dst) -> input(src)
+    import numpy as np
+    A = []
+    for (xd, yd), (xs, ys) in zip(dst, src):
+        A.append([xd, yd, 1, 0, 0, 0, -xs * xd, -xs * yd])
+        A.append([0, 0, 0, xd, yd, 1, -ys * xd, -ys * yd])
+    A = np.array(A, dtype="float64")
+    B = np.array(src, dtype="float64").reshape(8)
+    return np.linalg.solve(A, B)
+
+
+def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
+    """Inclina el mapa en 2.5D (rig rotation_x) + cielo/atmosfera arriba."""
+    from PIL import Image
+    inset = 0.06 + 0.22 * tilt        # convergencia de perspectiva arriba
+    horizon = 0.10 + 0.22 * tilt      # el mapa arranca mas abajo (cielo arriba)
+    hy = H * horizon
+    dst = [(W * inset, hy), (W * (1 - inset), hy), (W, H), (0, H)]
+    src = [(0, 0), (W, 0), (W, H), (0, H)]
+    coeffs = _find_coeffs(dst, src)
+    warped = frame_rgba.transform((W, H), Image.PERSPECTIVE, coeffs, Image.BICUBIC)
+    # cielo: gradiente vertical
+    import numpy as np
+    grad = np.zeros((H, W, 3), dtype="uint8")
+    tcol = np.array(sky_top); bcol = np.array(sky_bot)
+    for yy in range(H):
+        f = yy / max(1, H - 1)
+        grad[yy, :, :] = (tcol * (1 - f) + bcol * f).astype("uint8")
+    sky = Image.fromarray(grad, "RGB").convert("RGBA")
+    sky.alpha_composite(warped)
+    return sky
 
 
 def _draw_country(d, x, y, text, size, W, alpha):
