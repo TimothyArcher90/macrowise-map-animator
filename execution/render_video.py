@@ -161,13 +161,22 @@ def render(story, fmt, out_mp4):
             from caspian_base import build_caspian
             print("generando base Caspian (relieve hipsometrico)...")
             build_caspian(bbox, zoom, bpath)
+    elif source == "vector":
+        # estilo vector plano: colores precisos por pais + borde (look manual GeoLayers)
+        if not os.path.exists(bpath):
+            from vector_base import build_vector
+            print("generando base vector (colores precisos por pais)...")
+            build_vector(bbox, bpath, country_colors=story.get("country_colors"),
+                         highlight=story.get("highlight"),
+                         ocean=story.get("ocean", "#DCE3E8"))
     elif not os.path.exists(bpath):
         subprocess.run([sys.executable, os.path.join(HERE, "fetch_basemap.py"),
                         "--bbox", *[str(x) for x in bbox], "--zoom", str(zoom),
                         "--source", source, "--out", bpath], check=True)
 
-    # MASCARA POR PAIS opcional (look Caspian): resalta pais, apaga vecinos
-    if story.get("highlight"):
+    # MASCARA POR PAIS (solo relieve caspian): resalta pais, apaga vecinos.
+    # En 'vector' el realce ya va en el color del pais.
+    if story.get("highlight") and source == "caspian":
         hl_path = bpath.replace(".png", "_hl.png")
         if not os.path.exists(hl_path):
             from caspian_base import apply_highlight
@@ -222,42 +231,44 @@ def render(story, fmt, out_mp4):
         top = max(0, min(bh - crop_h, top))
         box = (int(left), int(top), int(left + crop_w), int(top + crop_h))
         frame = annotated.crop(box).resize((W, H), Image.LANCZOS).convert("RGBA")
+
+        # INCLINACION 2.5D del MAPA primero; las letras van ENCIMA (no se deforman)
+        fwd = None
+        if tilt > 0:
+            frame, fwd = apply_tilt(frame, W, H, tilt, sky_top, sky_bot)
         d = ImageDraw.Draw(frame)
 
-        # labels anclados al mapa (siguen la camara), fade-in en su t
+        def screen(lon, lat):
+            lx, ly = proj(lon, lat)
+            sx = (lx - box[0]) / (box[2] - box[0]) * W
+            sy = (ly - box[1]) / (box[3] - box[1]) * H
+            if fwd is not None:
+                sx, sy = _project_point(fwd, sx, sy)
+            return sx, sy
+
+        # labels (caja): tamaño CONSTANTE, siempre rectos, encima del mapa inclinado
         for lb in labels:
             appear = lb.get("t", 5)
             alpha = max(0.0, min(1.0, (t - appear) / 0.5))
             if alpha <= 0:
                 continue
-            lx, ly = proj(lb["lon"], lb["lat"])
-            sx = (lx - box[0]) / (box[2] - box[0]) * W
-            sy = (ly - box[1]) / (box[3] - box[1]) * H
+            sx, sy = screen(lb["lon"], lb["lat"])
             if -50 < sx < W + 50 and -50 < sy < H + 50:
                 draw_label(d, sx, sy, lb["text"].upper(), alpha, W)
 
-        # etiquetas de PAIS (grandes, tracking amplio, sin caja) estilo Caspian
+        # etiquetas de PAIS: tamaño constante (no encogen con el zoom/tilt)
         for ml in story.get("map_labels", []):
-            mlx, mly = proj(ml["lon"], ml["lat"])
-            sx = (mlx - box[0]) / (box[2] - box[0]) * W
-            sy = (mly - box[1]) / (box[3] - box[1]) * H
+            sx, sy = screen(ml["lon"], ml["lat"])
             if -100 < sx < W + 100 and -100 < sy < H + 100:
                 _draw_country(d, sx, sy, ml["text"], ml.get("size", 1.0), W, ml.get("alpha", 0.82))
 
-        # marcador de FOCO pulsante (señala un punto, ej. Taiwan)
+        # marcador de FOCO pulsante
         if focus:
             fa = max(0.0, min(1.0, (t - focus.get("t", 3)) / 0.5))
             if fa > 0:
-                fx, fy = proj(focus["lon"], focus["lat"])
-                sx = (fx - box[0]) / (box[2] - box[0]) * W
-                sy = (fy - box[1]) / (box[3] - box[1]) * H
+                sx, sy = screen(focus["lon"], focus["lat"])
                 if -80 < sx < W + 80 and -80 < sy < H + 80:
                     _draw_focus(d, sx, sy, t, fa)
-
-        # INCLINACION 2.5D (rig rotation_x del manual GeoLayers) — el mapa se acuesta
-        if tilt > 0:
-            frame = apply_tilt(frame, W, H, tilt, sky_top, sky_bot)
-            d = ImageDraw.Draw(frame)
 
         # lower-third de apertura (titulo + subtitulo), estilo MacroWise
         if lower:
@@ -282,7 +293,7 @@ def render(story, fmt, out_mp4):
 
 
 def _find_coeffs(dst, src):
-    # coeffs PIL PERSPECTIVE que mapean output(dst) -> input(src)
+    # coeffs de homografia que mapean un punto de 'dst' a 'src'
     import numpy as np
     A = []
     for (xd, yd), (xs, ys) in zip(dst, src):
@@ -291,6 +302,12 @@ def _find_coeffs(dst, src):
     A = np.array(A, dtype="float64")
     B = np.array(src, dtype="float64").reshape(8)
     return np.linalg.solve(A, B)
+
+
+def _project_point(coeffs, x, y):
+    a, b, c, d, e, f, g, h = coeffs
+    den = g * x + h * y + 1.0
+    return ((a * x + b * y + c) / den, (d * x + e * y + f) / den)
 
 
 def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
@@ -303,6 +320,7 @@ def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
     src = [(0, 0), (W, 0), (W, H), (0, H)]
     coeffs = _find_coeffs(dst, src)
     warped = frame_rgba.transform((W, H), Image.PERSPECTIVE, coeffs, Image.BICUBIC)
+    fwd = _find_coeffs(src, dst)   # directa: punto del mapa plano -> mapa inclinado
     # cielo: gradiente vertical
     import numpy as np
     grad = np.zeros((H, W, 3), dtype="uint8")
@@ -312,7 +330,7 @@ def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
         grad[yy, :, :] = (tcol * (1 - f) + bcol * f).astype("uint8")
     sky = Image.fromarray(grad, "RGB").convert("RGBA")
     sky.alpha_composite(warped)
-    return sky
+    return sky, fwd
 
 
 def _draw_country(d, x, y, text, size, W, alpha):

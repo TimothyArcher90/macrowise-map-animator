@@ -13,14 +13,16 @@ import urllib.request
 
 TILE = 256
 
-# GeoJSON de fronteras de paises (Natural Earth 110m via CDN publico, gratis).
-NE_COUNTRIES_URL = ("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/"
-                    "master/geojson/ne_110m_admin_0_countries.geojson")
+# GeoJSON de fronteras de paises (Natural Earth via CDN publico, gratis).
+NE_BASE = ("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/"
+           "master/geojson/ne_%s_admin_0_countries.geojson")
+NE_COUNTRIES_URL = NE_BASE % "110m"
 
 
 def lonlat_to_world_px(lon, lat, zoom):
     """lon/lat -> pixel global (Web Mercator) al 'zoom' dado."""
     n = TILE * (2 ** zoom)
+    lat = max(-85.05112878, min(85.05112878, lat))   # limite Web Mercator
     x = (lon + 180.0) / 360.0 * n
     s = math.sin(math.radians(lat))
     y = (0.5 - math.log((1 + s) / (1 - s)) / (4 * math.pi)) * n
@@ -46,12 +48,13 @@ def make_projector(bbox, zoom, out_w, out_h):
     return proj
 
 
-def download_natural_earth(cache_dir):
+def download_natural_earth(cache_dir, res="110m"):
+    """res: '110m' (rapido, bordes cuadrados) | '50m' (bordes suaves) | '10m' (detalle)."""
     os.makedirs(cache_dir, exist_ok=True)
-    path = os.path.join(cache_dir, "ne_110m_admin_0_countries.geojson")
+    path = os.path.join(cache_dir, "ne_%s_admin_0_countries.geojson" % res)
     if not os.path.exists(path):
-        req = urllib.request.Request(NE_COUNTRIES_URL, headers={"User-Agent": "mw-map/1.0"})
-        with urllib.request.urlopen(req, timeout=60) as r, open(path, "wb") as f:
+        req = urllib.request.Request(NE_BASE % res, headers={"User-Agent": "mw-map/1.0"})
+        with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
             f.write(r.read())
     with open(path, encoding="utf-8") as f:
         return json.load(f)
