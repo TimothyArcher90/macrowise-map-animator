@@ -247,7 +247,9 @@ def render(story, fmt, out_mp4):
     labels = story.get("labels", [])
     lower = story.get("lower_third")
 
-    frames_dir = os.path.join(TMP, "frames_%s" % fmt)
+    # carpeta de frames UNICA por render: dos renders en paralelo no se pisan
+    _rid = hashlib.md5(("%s|%s|%d" % (out_mp4, fmt, os.getpid())).encode()).hexdigest()[:10]
+    frames_dir = os.path.join(TMP, "frames_%s_%s" % (fmt, _rid))
     if os.path.isdir(frames_dir):
         shutil.rmtree(frames_dir)
     os.makedirs(frames_dir)
