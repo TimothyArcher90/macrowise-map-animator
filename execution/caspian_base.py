@@ -16,6 +16,11 @@ sys.path.insert(0, HERE)
 from relief import _elevation, hillshade  # noqa
 
 
+def _hex(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
 # Rampa hipsometrica CLARA estilo Caspian (terreno de papel crema/tostado, suave).
 # El color del pais va ENCIMA semi-transparente, asi que la base es tenue.
 HYPSO = [

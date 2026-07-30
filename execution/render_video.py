@@ -11,6 +11,7 @@ Uso:
   python render_video.py stories/estrecho_ormuz.json --format horizontal --out mapa.mp4
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -129,6 +130,11 @@ def _a(c, alpha):
     return (c[0], c[1], c[2], int(max(0, min(1, alpha)) * 255))
 
 
+def _hexc(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
 def _rgba_dot(d, x, y, c, alpha):
     d.ellipse([x - 7, y - 7, x + 7, y + 7], outline=_a((255, 236, 120), alpha), width=3)
     d.ellipse([x - 2, y - 2, x + 2, y + 2], fill=_a(c, alpha))
@@ -155,7 +161,10 @@ def render(story, fmt, out_mp4):
     sky_top = tuple(story.get("sky_top", [22, 28, 38]))
     sky_bot = tuple(story.get("sky_bot", [58, 70, 86]))
 
-    bpath = os.path.join(TMP, "basemap_%s_z%d.png" % (source, zoom))
+    # el nombre del cache incluye bbox + tintes: si cambian, se regenera
+    _sig = hashlib.md5(json.dumps([bbox, story.get("country_colors")],
+                                  sort_keys=True).encode()).hexdigest()[:8]
+    bpath = os.path.join(TMP, "basemap_%s_z%d_%s.png" % (source, zoom, _sig))
     if source == "caspian":
         # terreno claro Caspian + tinte de pais semi-transparente (country_colors)
         if not os.path.exists(bpath):
@@ -269,6 +278,62 @@ def render(story, fmt, out_mp4):
                 sx, sy = screen(focus["lon"], focus["lat"])
                 if -80 < sx < W + 80 and -80 < sy < H + 80:
                     _draw_focus(d, sx, sy, t, fa)
+
+        # ---- KIT CASPIAN: flechas dasheadas / arcos / ciudades / pins ----
+        import overlays as OV
+        # FLECHAS: se dibujan progresivamente entre t0 y t1, con punta triangular
+        for ar in story.get("arrows", []):
+            t0, t1 = ar.get("t", [3, 6])
+            if t < t0:
+                continue
+            prog = 1.0 if t >= t1 else (t - t0) / max(0.01, t1 - t0)
+            pth = ar.get("path") or [ar["from"], ar["to"]]
+            spts = [screen(lo, la) for lo, la in pth]
+            if ar.get("curve"):
+                spts = OV.bezier(spts[0], spts[-1], curve=float(ar["curve"]))
+            col = _hexc(ar.get("color", "#1A1A22"))
+            wdt = int(ar.get("width", max(5, W // 320)))
+            tip = OV.dashed_line(d, spts, col, width=wdt,
+                                 dash=ar.get("dash", 20), gap=ar.get("gap", 14),
+                                 progress=prog)
+            if prog >= 0.99 and ar.get("head", True) and len(spts) > 1:
+                OV.arrow_head(d, spts[-1], spts[-2], col, size=int(wdt * 4.2))
+            elif tip and ar.get("head", True):
+                OV.arrow_head(d, tip, spts[0], col, size=int(wdt * 3.6))
+
+        # CIUDADES: dot amarillo + nombre
+        for c in story.get("cities", []):
+            ca = max(0.0, min(1.0, (t - c.get("t", 0)) / 0.5)) if c.get("t") else 1.0
+            if ca <= 0:
+                continue
+            sx, sy = screen(c["lon"], c["lat"])
+            if -60 < sx < W + 60 and -60 < sy < H + 60:
+                OV.city_dot(d, sx, sy, c.get("name", ""), font(int(W / 62), bold=False),
+                            alpha=ca, r=int(W / 200))
+
+        # PINS: circulo de faccion con etiqueta
+        for p in story.get("pins", []):
+            pa = max(0.0, min(1.0, (t - p.get("t", 0)) / 0.5)) if p.get("t") else 1.0
+            if pa <= 0:
+                continue
+            sx, sy = screen(p["lon"], p["lat"])
+            if -100 < sx < W + 100 and -100 < sy < H + 100:
+                OV.pin(d, sx, sy, _hexc(p.get("color", "#C9A84C")),
+                       font(int(W / 70)), p.get("label"), r=int(W / 58), alpha=pa)
+
+        # BANNER de titulo (marcador amarillo) + CHIP de fecha — en pantalla
+        for bn in story.get("banners", []):
+            ba = _fade_window(t, bn.get("in", 1.0), bn.get("out", 6.0), 0.45)
+            if ba > 0:
+                import overlays as OV2
+                OV2.title_banner(d, W, H, bn["text"].upper(),
+                                 font(int(W / (bn.get("scale") and 16 / bn["scale"] or 16))),
+                                 y_frac=bn.get("y", 0.42), alpha=ba)
+        for dc in story.get("dates", []):
+            da = _fade_window(t, dc.get("in", 0.5), dc.get("out", 99), 0.4)
+            if da > 0:
+                import overlays as OV3
+                OV3.date_chip(d, W, H, dc["text"], font(int(W / 34)), alpha=da)
 
         # lower-third de apertura (titulo + subtitulo), estilo MacroWise
         if lower:

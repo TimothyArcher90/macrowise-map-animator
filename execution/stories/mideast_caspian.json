@@ -1,0 +1,51 @@
+{
+  "_comment": "Medio Oriente estilo Caspian Report COMPLETO: terreno claro + tintes de pais semi-transparentes + flechas dasheadas + ciudades + pins + banner + fecha.",
+  "bbox": [34.0, 22.0, 64.0, 40.0],
+  "basemap_source": "caspian",
+  "video_zoom": 7,
+  "theme": "light",
+  "duration": 20,
+  "tilt": 0,
+  "country_colors": {
+    "Iran": ["#D24B4B", 0.5],
+    "Iraq": ["#E09A9A", 0.42],
+    "Syria": ["#E09A9A", 0.42],
+    "Saudi Arabia": ["#EFE6D2", 0.30],
+    "Israel": ["#E8C36A", 0.45]
+  },
+  "logo": "C:/Users/tante/Downloads/NUEVA IMAGEN MW-20260727T163921Z-1-001/NUEVA IMAGEN MW/LOGO MW NEGRO.png",
+  "banners": [
+    { "text": "¿Quién parpadea primero?", "in": 1.2, "out": 6.5, "y": 0.40, "scale": 1.0 }
+  ],
+  "dates": [
+    { "text": "2026", "in": 0.6, "out": 19.5 }
+  ],
+  "map_labels": [
+    { "lon": 54.0, "lat": 32.5, "text": "IRÁN",   "size": 1.5, "alpha": 0.85 },
+    { "lon": 43.5, "lat": 33.0, "text": "IRAK",   "size": 0.7, "alpha": 0.75 },
+    { "lon": 38.5, "lat": 35.0, "text": "SIRIA",  "size": 0.6, "alpha": 0.75 },
+    { "lon": 45.0, "lat": 24.5, "text": "ARABIA SAUDÍ", "size": 0.6, "alpha": 0.7 }
+  ],
+  "cities": [
+    { "lon": 51.42, "lat": 35.69, "name": "Teherán", "t": 4 },
+    { "lon": 44.36, "lat": 33.31, "name": "Bagdad",  "t": 6 },
+    { "lon": 36.29, "lat": 33.51, "name": "Damasco", "t": 8 },
+    { "lon": 51.53, "lat": 25.28, "name": "Doha",    "t": 10 },
+    { "lon": 46.72, "lat": 24.71, "name": "Riad",    "t": 11 }
+  ],
+  "arrows": [
+    { "from": [51.42, 35.69], "to": [44.36, 33.31], "t": [5, 8],  "color": "#1A1A22", "width": 7 },
+    { "from": [44.36, 33.31], "to": [36.29, 33.51], "t": [8, 11], "color": "#1A1A22", "width": 7 },
+    { "from": [54.5, 27.0],  "to": [50.0, 26.0],   "t": [12, 15], "color": "#C0392B", "width": 7, "curve": 0.25 }
+  ],
+  "pins": [
+    { "lon": 35.2, "lat": 31.8, "color": "#2E7D5B", "label": "HEZBOLLAH", "t": 9 },
+    { "lon": 56.3, "lat": 26.6, "color": "#C0392B", "label": "ORMUZ",     "t": 13 }
+  ],
+  "camera": [
+    { "t": 0.0,  "lon": 49.0, "lat": 31.0, "span": 32.0, "dwell": 1.3 },
+    { "t": 7.0,  "lon": 47.0, "lat": 32.5, "span": 24.0, "dwell": 1.2 },
+    { "t": 13.0, "lon": 50.0, "lat": 29.5, "span": 20.0, "dwell": 1.2 },
+    { "t": 20.0, "lon": 49.0, "lat": 31.0, "span": 28.0 }
+  ]
+}
