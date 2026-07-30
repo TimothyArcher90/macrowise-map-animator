@@ -40,7 +40,11 @@ PANEL = (26, 26, 38)       # #1A1A26 Ink (caja de label)
 
 # ---------- easing + camara con micro-pausas ----------
 def ease(u):
-    return 3 * u * u - 2 * u * u * u
+    """Smootherstep QUINTICO (Perlin): derivada Y aceleracion cero en los extremos.
+    El cubico (smoothstep) arranca y frena con un tironcito perceptible; el
+    quintico entra y sale sin que se sienta el keyframe = movimiento organico."""
+    u = max(0.0, min(1.0, u))
+    return u * u * u * (u * (u * 6 - 15) + 10)
 
 
 def cam_at(wps, t):
@@ -61,9 +65,13 @@ def cam_at(wps, t):
                 return a["lon"], a["lat"], a["span"]
             t0 = a["t"] + a["dwell"]
             u = 0.0 if b["t"] - t0 <= 0 else ease((t - t0) / (b["t"] - t0))
+            # ZOOM en escala LOGARITMICA: interpolar el span linealmente hace que
+            # el zoom parezca acelerar al final (9->5 grados no es perceptualmente
+            # uniforme). Geometrico = velocidad de zoom constante, como una lente.
+            span = math.exp(math.log(a["span"]) * (1 - u) + math.log(b["span"]) * u)
             return (a["lon"] + (b["lon"] - a["lon"]) * u,
                     a["lat"] + (b["lat"] - a["lat"]) * u,
-                    a["span"] + (b["span"] - a["span"]) * u)
+                    span)
     a = wps[-1]
     return a["lon"], a["lat"], a["span"]
 
@@ -640,9 +648,10 @@ def _draw_lower_third(d, W, H, lower, alpha):
 def _encode(frames_dir, out_mp4, W, H):
     # grado cinematografico: contraste/saturacion suave + sharpen + viñeta + grain fino
     # grano ESTATICO (sin allf=t) para que no titile al moverse; viñeta suave; grado leve
-    vf = ("eq=contrast=1.03:saturation=1.00:gamma=0.995,"
-          "unsharp=5:5:0.35:5:5:0.0,"
-          "vignette=PI/8,"
+    # sin vignette: oscurecia los bordes y era parte del look "apagado".
+    # gamma>1 y brightness levantan el conjunto; saturacion para vida.
+    vf = ("eq=contrast=1.02:saturation=1.12:gamma=1.06:brightness=0.03,"
+          "unsharp=5:5:0.4:5:5:0.0,"
           "noise=alls=2")
     os.makedirs(os.path.dirname(out_mp4), exist_ok=True)
     cmd = ["ffmpeg", "-y", "-framerate", str(FPS),

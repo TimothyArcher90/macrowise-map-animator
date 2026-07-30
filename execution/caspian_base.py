@@ -58,16 +58,18 @@ def _ramp(elev, stops=None):
 # Tema OSCURO CON VIDA: no negro plano — verdes profundos en tierras bajas,
 # ocres en zonas secas, roca clara en la altura. El relieve se lee.
 HYPSO_DARK = [
-    (0,    (38, 58, 46)),     # verde profundo (llanura vegetada)
-    (350,  (46, 62, 48)),
-    (900,  (62, 66, 48)),     # vira a ocre
-    (1800, (78, 70, 52)),
-    (2800, (92, 82, 66)),     # roca
-    (4000, (118, 112, 102)),
-    (5500, (188, 190, 192)),  # nieve
+    (0,    (72, 104, 82)),    # verde vivo (llanura vegetada)
+    (350,  (86, 112, 84)),
+    (900,  (114, 118, 86)),   # vira a ocre
+    (1800, (140, 126, 94)),
+    (2800, (158, 144, 118)),  # roca
+    (4000, (186, 178, 166)),
+    (5500, (234, 236, 238)),  # nieve
 ]
-WATER_DARK_SHALLOW = (58, 158, 224)
-WATER_DARK_DEEP = (28, 118, 190)
+# calibrados PRE-boost: el gamma/brillo final los levanta, asi que se parten
+# mas oscuros para aterrizar en un azul solido (no cian electrico).
+WATER_DARK_SHALLOW = (30, 108, 168)
+WATER_DARK_DEEP = (14, 68, 118)
 
 
 def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None, theme="light"):
@@ -159,14 +161,18 @@ def add_life(base_path, bbox, zoom, amount=0.45, sat=1.25, dark=False, out_path=
                     2 * b * (1 - s) + np.sqrt(np.clip(b, 0, 1)) * (2 * s - 1))
     mixed = b * (1 - amount) + soft * amount
     # ademas un toque del color crudo del satelite (vegetacion real)
-    mixed = mixed * 0.86 + s * 0.14
-    if dark:
-        mixed = mixed * 0.82          # el tema oscuro no debe aclararse de mas
+    mixed = mixed * 0.80 + s * 0.20
+    # LEVANTAR LUMINOSIDAD: el terreno quedaba muerto de oscuro. Curva de gamma
+    # que abre las sombras sin quemar las luces (lift de negros + gamma).
+    mixed = np.clip(mixed, 0, 1)
+    mixed = np.power(mixed, 0.72)                 # gamma: abre medios y sombras
+    mixed = 0.055 + mixed * 0.945                 # lift: los negros dejan de ser 0
     mixed = np.clip(mixed, 0, 1)
 
     img = Image.fromarray((mixed * 255).astype("uint8"), "RGB")
     img = ImageEnhance.Color(img).enhance(sat)        # vida
-    img = ImageEnhance.Contrast(img).enhance(1.06)
+    img = ImageEnhance.Brightness(img).enhance(1.14)  # brillo global
+    img = ImageEnhance.Contrast(img).enhance(1.04)
     out_path = out_path or base_path.replace(".png", "_life.png")
     img.save(out_path)
     return out_path
