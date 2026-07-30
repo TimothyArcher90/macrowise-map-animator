@@ -164,11 +164,21 @@ def draw_urban(img, bbox, color="#6E6A64", alpha=120, hatch=False, hatch_gap=9):
                     continue
                 md.polygon([tuple(proj(lo, la)) for lo, la in ring], fill=255)
                 n += 1
-        stripes = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        # rayas + un velo de base: la trama sola se lee como ruido a poco zoom
+        stripes = Image.new("RGBA", (W, H), col + (int(alpha * 0.35),))
         sd = ImageDraw.Draw(stripes)
+        lw = max(2, hatch_gap // 3)
         for x in range(-H, W + H, hatch_gap):
-            sd.line([x, 0, x + H, H], fill=col + (alpha,), width=2)
+            sd.line([x, 0, x + H, H], fill=col + (min(255, int(alpha * 1.8)),), width=lw)
         layer = Image.composite(stripes, Image.new("RGBA", (W, H), (0, 0, 0, 0)), mask)
+        # contorno de la zona: la delimita y evita que parezca suciedad del mapa
+        od = ImageDraw.Draw(layer)
+        for f in ge.get("features", []):
+            for ring in _geoms(f):
+                if len(ring) < 3 or not _in_bbox(ring, bbox):
+                    continue
+                pts = [tuple(proj(lo, la)) for lo, la in ring]
+                od.line(pts + [pts[0]], fill=col + (min(255, int(alpha * 1.5)),), width=2)
     else:
         for f in ge.get("features", []):
             for ring in _geoms(f):

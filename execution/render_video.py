@@ -327,6 +327,12 @@ def render(story, fmt, out_mp4):
                 onscreen = (-mgx < sx < W + mgx) and (-mgy < sy < H + mgy)
                 sx = max(mgx, min(W - mgx, sx))
                 sy = max(mgy, min(H - mgy, sy))
+                # ZONAS DE UI reservadas: chip de fecha (sup-izq) y logo (inf-der).
+                # Una etiqueta pegada al borde no debe caer encima de ellas.
+                if story.get("dates") and sx < W * 0.34 and sy < H * 0.20:
+                    sy = H * 0.22
+                if logo_img is not None and sx > W * 0.66 and sy > H * 0.84:
+                    sy = H * 0.80
                 # si el pais quedo MUY lejos del cuadro, se atenua en vez de gritar
                 fade = 1.0 if onscreen else 0.55
             else:

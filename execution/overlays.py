@@ -152,10 +152,13 @@ def icon(d, x, y, kind, size=22, color=(24, 24, 28), bg=(255, 255, 255), alpha=1
         d.arc([x - s * 0.62, y - s * 0.1, x + s * 0.62, y + s * 0.85], 20, 160, fill=c, width=max(3, s // 6))
         d.ellipse([x - s * 0.16, y - s * 0.96, x + s * 0.16, y - s * 0.64], outline=c, width=max(2, s // 8))
     elif kind == "ship":
-        d.polygon([(x - s * 0.7, y + s * 0.1), (x + s * 0.7, y + s * 0.1),
-                   (x + s * 0.42, y + s * 0.55), (x - s * 0.42, y + s * 0.55)], fill=c)
-        d.rectangle([x - s * 0.34, y - s * 0.45, x + s * 0.18, y + s * 0.06], fill=c)
-        d.line([x + s * 0.4, y - s * 0.6, x + s * 0.4, y + s * 0.08], fill=c, width=max(2, s // 9))
+        # casco trapezoidal + superestructura + chimenea (silueta legible a tamano chico)
+        d.polygon([(x - s * 0.78, y + s * 0.06), (x + s * 0.82, y + s * 0.06),
+                   (x + s * 0.46, y + s * 0.52), (x - s * 0.52, y + s * 0.52)], fill=c)
+        d.rectangle([x - s * 0.30, y - s * 0.30, x + s * 0.26, y + s * 0.04], fill=c)
+        d.rectangle([x - s * 0.06, y - s * 0.62, x + s * 0.12, y - s * 0.28], fill=c)
+        d.line([x - s * 0.78, y + s * 0.06, x + s * 0.82, y + s * 0.06],
+               fill=_a(bg, alpha), width=max(1, s // 12))
     elif kind == "plane":
         d.polygon([(x, y - s * 0.8), (x + s * 0.18, y - s * 0.1), (x + s * 0.8, y + s * 0.28),
                    (x + s * 0.8, y + s * 0.46), (x + s * 0.14, y + s * 0.3),
