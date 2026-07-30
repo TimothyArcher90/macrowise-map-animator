@@ -8,6 +8,7 @@ Capas (como las arma Caspian en AE, pero automatico):
   3. Agua estilizada: teal con gradiente de profundidad (batimetria).
 Resultado: la base tostada con montañas en 3D, identica en espiritu a su mapa de Iran.
 """
+import math
 import os
 import sys
 
@@ -190,17 +191,29 @@ def add_life(base_path, bbox, zoom, amount=0.45, sat=1.25, dark=False, out_path=
     mixed = b * (1 - amount) + soft * amount
     # ademas un toque del color crudo del satelite (vegetacion real)
     mixed = mixed * 0.80 + s * 0.20
-    # LEVANTAR LUMINOSIDAD: el terreno quedaba muerto de oscuro. Curva de gamma
-    # que abre las sombras sin quemar las luces (lift de negros + gamma).
     mixed = np.clip(mixed, 0, 1)
-    mixed = np.power(mixed, 0.72)                 # gamma: abre medios y sombras
-    mixed = 0.055 + mixed * 0.945                 # lift: los negros dejan de ser 0
+
+    # EXPOSICION ADAPTATIVA: un terreno de nieve (Himalaya) o desierto (Sahel) ya
+    # viene claro; aplicarle el mismo boost que a una selva oscura lo QUEMA. Se
+    # mide la luminancia media y se ajusta el gamma para aterrizar en un target.
+    lum = float(mixed.mean())
+    target = 0.46
+    gamma = math.log(max(target, 1e-3)) / math.log(max(lum, 1e-3))
+    gamma = max(0.62, min(1.35, gamma))          # tope: no exagerar en ninguno
+    mixed = np.power(mixed, gamma)
+    mixed = 0.035 + mixed * 0.955                # lift suave de negros
+
+    # ROLLOFF DE ALTAS LUCES (filmico): comprime por encima de 0.72 en vez de
+    # clipear a blanco. Es lo que evita que la nieve y la arena se "quemen".
+    knee = 0.72
+    hi = mixed > knee
+    mixed[hi] = knee + (1 - knee) * np.tanh((mixed[hi] - knee) / (1 - knee) * 1.6) / \
+        np.tanh(1.6)
     mixed = np.clip(mixed, 0, 1)
 
     img = Image.fromarray((mixed * 255).astype("uint8"), "RGB")
     img = ImageEnhance.Color(img).enhance(sat)        # vida
-    img = ImageEnhance.Brightness(img).enhance(1.14)  # brillo global
-    img = ImageEnhance.Contrast(img).enhance(1.04)
+    img = ImageEnhance.Contrast(img).enhance(1.05)
     out_path = out_path or base_path.replace(".png", "_life.png")
     img.save(out_path)
     return out_path

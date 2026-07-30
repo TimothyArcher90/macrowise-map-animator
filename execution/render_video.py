@@ -651,7 +651,7 @@ def _encode(frames_dir, out_mp4, W, H):
     # grano ESTATICO (sin allf=t) para que no titile al moverse; viñeta suave; grado leve
     # sin vignette: oscurecia los bordes y era parte del look "apagado".
     # gamma>1 y brightness levantan el conjunto; saturacion para vida.
-    vf = ("eq=contrast=1.02:saturation=1.12:gamma=1.06:brightness=0.03,"
+    vf = ("eq=contrast=1.02:saturation=1.08:gamma=1.0,"
           "unsharp=5:5:0.4:5:5:0.0,"
           "noise=alls=2")
     os.makedirs(os.path.dirname(out_mp4), exist_ok=True)
