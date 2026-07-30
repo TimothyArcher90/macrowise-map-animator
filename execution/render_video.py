@@ -135,6 +135,9 @@ def _hexc(h):
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
+_DOF_MASK = {"k": None, "wh": None}   # mascara de profundidad de campo (cacheada)
+
+
 def _rgba_dot(d, x, y, c, alpha):
     d.ellipse([x - 7, y - 7, x + 7, y + 7], outline=_a((255, 236, 120), alpha), width=3)
     d.ellipse([x - 2, y - 2, x + 2, y + 2], fill=_a(c, alpha))
@@ -157,9 +160,14 @@ def render(story, fmt, out_mp4):
     dur = story.get("duration", 20)
     source = story.get("basemap_source", "esri")
     theme = story.get("theme", "dark")   # 'light' para mapas claros
-    tilt = float(story.get("tilt", 0))   # 0 = plano, ~0.6 = 2.5D inclinado
+    # inclinacion: 'tilt_deg' en GRADOS (0-60, como el rig de AE) o 'tilt' 0-1 (legacy)
+    if "tilt_deg" in story:
+        tilt = max(0.0, min(60.0, float(story["tilt_deg"]))) / 60.0
+    else:
+        tilt = float(story.get("tilt", 0))
     sky_top = tuple(story.get("sky_top", [22, 28, 38]))
     sky_bot = tuple(story.get("sky_bot", [58, 70, 86]))
+    dof = float(story.get("dof", 0))     # 0 = sin desenfoque, ~0.5 = documental suave
 
     # el nombre del cache incluye bbox + tintes: si cambian, se regenera
     _sig = hashlib.md5(json.dumps([bbox, story.get("country_colors")],
@@ -241,6 +249,22 @@ def render(story, fmt, out_mp4):
         box = (int(left), int(top), int(left + crop_w), int(top + crop_h))
         frame = annotated.crop(box).resize((W, H), Image.LANCZOS).convert("RGBA")
 
+        # PROFUNDIDAD DE CAMPO falsa ("Blur it Out"): desenfoca los bordes del cuadro
+        # y deja nitido el centro. Da el aire cinematografico de documental.
+        if dof > 0:
+            from PIL import ImageFilter as _IF
+            import numpy as _np
+            blurred = frame.filter(_IF.GaussianBlur(dof * 9.0))
+            if _DOF_MASK.get("k") is None or _DOF_MASK.get("wh") != (W, H):
+                yy, xx = _np.mgrid[0:H, 0:W]
+                nx = (xx - W / 2) / (W / 2)
+                ny = (yy - H / 2) / (H / 2)
+                rad = _np.sqrt(nx * nx + ny * ny) / 1.414
+                k = _np.clip((rad - 0.42) / 0.5, 0, 1) ** 1.6   # centro nitido, bordes suaves
+                _DOF_MASK["k"] = Image.fromarray((k * 255).astype("uint8"), "L")
+                _DOF_MASK["wh"] = (W, H)
+            frame = Image.composite(blurred, frame, _DOF_MASK["k"])
+
         # INCLINACION 2.5D del MAPA primero; las letras van ENCIMA (no se deforman)
         fwd = None
         if tilt > 0:
@@ -310,6 +334,27 @@ def render(story, fmt, out_mp4):
             if -60 < sx < W + 60 and -60 < sy < H + 60:
                 OV.city_dot(d, sx, sy, c.get("name", ""), font(int(W / 62), bold=False),
                             alpha=ca, r=int(W / 200))
+
+        # PINS CON FOTO DE LIDER: recorte circular + aro + linea al punto del mapa
+        for lp in story.get("leaders", []):
+            la2 = max(0.0, min(1.0, (t - lp.get("t", 0)) / 0.5)) if lp.get("t") else 1.0
+            if la2 <= 0:
+                continue
+            ax, ay = screen(lp["lon"], lp["lat"])
+            # el pin flota desplazado del punto (offset en fraccion de pantalla)
+            ox = lp.get("dx", 0.10) * W
+            oy = lp.get("dy", -0.14) * H
+            px, py = ax + ox, ay + oy
+            # clamp: el pin nunca se sale del cuadro (con margen para aro + etiqueta)
+            _r = int(W * lp.get("size", 0.045))
+            m = _r + int(W * 0.02)
+            px = max(m, min(W - m, px))
+            py = max(m, min(H - m - int(H * 0.06), py))
+            if True:
+                OV.photo_pin(frame, d, px, py, lp["photo"],
+                             r=int(W * lp.get("size", 0.045)), alpha=la2,
+                             anchor=(ax, ay), font_obj=font(int(W / 72)),
+                             label=lp.get("label"))
 
         # PINS: circulo de faccion con etiqueta
         for p in story.get("pins", []):

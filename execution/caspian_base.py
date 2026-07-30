@@ -96,7 +96,11 @@ def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None):
                     md.polygon([tuple(proj(lo, la)) for lo, la in ring], fill=255)
             k = (np.asarray(m).astype("float64") / 255.0)[:, :, None] * a
             k = k * landmask[:, :, None]      # el tinte NO pinta el mar
-            img = img * (1 - k) + col[None, None, :] * k
+            # MULTIPLY (tecnica canonica GEOlayers/AE): preserva el relieve bajo el
+            # color en vez de taparlo. Se mezcla con screen suave para no ensuciar.
+            mult = img * col[None, None, :]
+            mult = mult * 0.82 + (1 - (1 - img) * (1 - col[None, None, :] * 0.35)) * 0.18
+            img = img * (1 - k) + mult * k
 
     out = Image.fromarray((np.clip(img, 0, 1) * 255).astype("uint8"))
     out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=45))
