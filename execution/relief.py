@@ -8,11 +8,13 @@ texturizado con sombreado de montañas (soft-light) y lo devuelve.
 import io
 import math
 import os
+import sys
 import urllib.request
 
 TILE = 256
 TERR = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
-TMP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".tmp")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workdir import TMP  # noqa: cache en D:
 
 
 def _ll2tile(lon, lat, z):

@@ -51,16 +51,18 @@ def _ramp(elev):
     return out
 
 
-def build_caspian(bbox, zoom, out_path, z_factor=3.5):
+def build_caspian(bbox, zoom, out_path, z_factor=2.9):
     import numpy as np
     from PIL import Image, ImageFilter
     elev = _elevation(bbox, min(zoom, 10))
     land = _ramp(elev) / 255.0
+    # desaturar ~18% -> tonos tierra naturales (no ultrasaturado), estilo Caspian/JH
+    lum = land.mean(axis=2, keepdims=True)
+    land = land * 0.82 + lum * 0.18
 
-    # hillshade fuerte para volumen 3D
+    # hillshade para volumen 3D (mas suave, menos duro)
     hs = hillshade(elev, az=315, alt=42, z_factor=z_factor)[:, :, None]
-    # multiply suave: mantiene color, hunde valles, ilumina crestas
-    shaded = land * (0.55 + 0.9 * hs)
+    shaded = land * (0.62 + 0.74 * hs)
     shaded = np.clip(shaded, 0, 1)
 
     # agua: batimetria teal donde elev <= 0
@@ -96,10 +98,10 @@ def apply_highlight(basemap_path, bbox, names, out_path=None):
     mask = mask.filter(ImageFilter.GaussianBlur(3))
     m = np.asarray(base).astype("float64") / 255
     k = (np.asarray(mask).astype("float64") / 255)[:, :, None]
-    # afuera: desaturar hacia gris-papel + oscurecer
+    # afuera: NO a gris — solo atenuar sutil (mantiene relieve y color natural).
+    # el pais protagonista destaca por CONTRASTE, no por apagar a los vecinos.
     lum = (m[:, :, 0] * 0.299 + m[:, :, 1] * 0.587 + m[:, :, 2] * 0.114)[:, :, None]
-    paper = np.array([0.86, 0.85, 0.82])[None, None, :]
-    dim = (lum * 0.5 + paper * 0.5) * 0.82
+    dim = (m * 0.72 + lum * 0.28) * 0.90   # 28% desaturado + 10% mas oscuro
     out = m * k + dim * (1 - k)
     out_path = out_path or basemap_path.replace(".png", "_hl.png")
     Image.fromarray((np.clip(out, 0, 1) * 255).astype("uint8")).save(out_path)

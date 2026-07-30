@@ -22,8 +22,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from project import make_projector, download_natural_earth, country_rings  # noqa
 
+from workdir import TMP  # cache/frames en D:, no en C:
+
 FORMATS = {"horizontal": (1920, 1080), "vertical": (1080, 1920)}
-TMP = os.path.join(HERE, "..", ".tmp")
 FPS = 30
 
 COL = {"Iran": (224, 83, 61), "Oman": (78, 201, 176),
@@ -387,7 +388,7 @@ def _draw_lower_third(d, W, H, lower, alpha):
 def _encode(frames_dir, out_mp4, W, H):
     # grado cinematografico: contraste/saturacion suave + sharpen + viñeta + grain fino
     # grano ESTATICO (sin allf=t) para que no titile al moverse; viñeta suave; grado leve
-    vf = ("eq=contrast=1.03:saturation=1.06:gamma=0.995,"
+    vf = ("eq=contrast=1.03:saturation=1.00:gamma=0.995,"
           "unsharp=5:5:0.35:5:5:0.0,"
           "vignette=PI/8,"
           "noise=alls=2")
