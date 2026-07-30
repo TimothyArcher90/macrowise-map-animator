@@ -307,6 +307,14 @@ def render(story, fmt, out_mp4):
                 sx, sy = _project_point(fwd, sx, sy)
             return sx, sy
 
+        def under_ui(sx, sy):
+            """True si el punto cae bajo el chip de fecha o el logo (no dibujar ahi)."""
+            if story.get("dates") and sx < W * 0.30 and sy < H * 0.17:
+                return True
+            if logo_img is not None and sx > W * 0.68 and sy > H * 0.86:
+                return True
+            return False
+
         # labels (caja): tamaño CONSTANTE, siempre rectos, encima del mapa inclinado
         for lb in labels:
             appear = lb.get("t", 5)
@@ -378,7 +386,7 @@ def render(story, fmt, out_mp4):
             if ca <= 0:
                 continue
             sx, sy = screen(c["lon"], c["lat"])
-            if -60 < sx < W + 60 and -60 < sy < H + 60:
+            if -60 < sx < W + 60 and -60 < sy < H + 60 and not under_ui(sx, sy):
                 # si hay un icono en esta misma coordenada, corre el nombre para no pisarlo
                 off = 0
                 for ic in story.get("icons", []):
@@ -399,7 +407,7 @@ def render(story, fmt, out_mp4):
             if ia <= 0:
                 continue
             sx, sy = screen(ic["lon"], ic["lat"])
-            if -60 < sx < W + 60 and -60 < sy < H + 60:
+            if -60 < sx < W + 60 and -60 < sy < H + 60 and not under_ui(sx, sy):
                 OV.icon(d, sx, sy, ic.get("kind", "dot"),
                         size=int(W * ic.get("size", 0.012)),
                         color=_hexc(ic.get("color", "#1A1A22")),

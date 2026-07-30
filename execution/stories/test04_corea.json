@@ -1,0 +1,47 @@
+{
+  "_comment": "TEST 04 — Corea: dos paises tintados contrastantes, frontera marcada, ciudades densas, valida legibilidad con paises chicos y juntos.",
+  "bbox": [124.0, 33.0, 131.5, 43.5],
+  "basemap_source": "caspian",
+  "theme": "light",
+  "video_zoom": 8,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.38,
+  "dof_mode": "radial",
+  "country_colors": {
+    "South Korea": ["#E8C33D", 0.55],
+    "North Korea": ["#C85A52", 0.5],
+    "China": ["#E8E0CC", 0.28],
+    "Japan": ["#E8E0CC", 0.28]
+  },
+  "rivers": { "color": "#4E96C8", "width": 2, "alpha": 165 },
+  "borders": { "color": "#22222A", "width": 3, "alpha": 190 },
+  "map_labels": [
+    { "lon": 127.9, "lat": 36.3, "text": "COREA DEL SUR",  "size": 0.75, "alpha": 0.88 },
+    { "lon": 126.8, "lat": 40.2, "text": "COREA DEL NORTE","size": 0.75, "alpha": 0.85 }
+  ],
+  "cities": [
+    { "place": "Seoul",     "name": "Seúl",      "t": 3 },
+    { "place": "Pyongyang", "name": "Pionyang",  "t": 5, "side": "left" },
+    { "place": "Busan",     "name": "Busán",     "t": 7 },
+    { "place": "Incheon",   "name": "Incheon",   "t": 9, "side": "left" }
+  ],
+  "icons": [
+    { "place": "Busan", "kind": "anchor", "t": 8,  "size": 0.011 },
+    { "lon": 127.0, "lat": 38.3, "kind": "alert", "t": 11, "size": 0.012, "color": "#C0392B" }
+  ],
+  "callouts": [
+    { "lon": 127.0, "lat": 38.3, "text": "Zona desmilitarizada\n4 km de ancho",
+      "t": 12, "dx": 0.17, "dy": -0.06, "fs": 54 },
+    { "lon": 126.9, "lat": 37.5, "text": "Seúl: a 40 km\nde la frontera",
+      "t": 15, "dx": -0.19, "dy": 0.10, "fs": 54 }
+  ],
+  "banners": [ { "text": "40 kilómetros", "in": 1.2, "out": 6.0, "y": 0.40 } ],
+  "dates": [ { "text": "2026", "in": 0.6, "out": 19.5 } ],
+  "camera": [
+    { "t": 0.0,  "lon": 127.5, "lat": 38.2, "span": 8.5, "dwell": 1.3 },
+    { "t": 7.0,  "lon": 127.2, "lat": 38.0, "span": 6.4, "dwell": 1.2 },
+    { "t": 14.0, "lon": 127.0, "lat": 37.9, "span": 4.6, "dwell": 1.3 },
+    { "t": 20.0, "lon": 127.4, "lat": 38.2, "span": 7.6 }
+  ]
+}
