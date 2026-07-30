@@ -214,6 +214,21 @@ def render(story, fmt, out_mp4):
             hl_path = apply_highlight(bpath, bbox, story["highlight"])
         bpath = hl_path
 
+    # VIDA: mezcla de imagen satelital real (vegetacion/desiertos) sobre la base
+    # estilizada. Sin esto el terreno queda plano y apagado.
+    if story.get("life"):
+        _l = story["life"] if isinstance(story["life"], dict) else {}
+        amount = _l.get("amount", 0.45) if isinstance(story["life"], dict) else float(story["life"])
+        lsig = hashlib.md5(("%s|%s" % (amount, _l.get("sat", 1.25))).encode()).hexdigest()[:6]
+        lpath = bpath.replace(".png", "_life%s.png" % lsig)
+        if not os.path.exists(lpath):
+            from caspian_base import add_life
+            print("dando vida al terreno (mezcla satelital)...")
+            lpath = add_life(bpath, bbox, zoom, amount=amount,
+                             sat=_l.get("sat", 1.25), dark=(theme == "dark"),
+                             out_path=lpath)
+        bpath = lpath
+
     # CAPAS GEOGRAFICAS horneadas: rios, lagos, urbano, fronteras, costa, extrusion
     _geo_cfg = {k: story[k] for k in
                 ("rivers", "lakes", "urban", "borders", "internal_borders",

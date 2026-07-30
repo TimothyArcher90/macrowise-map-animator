@@ -186,5 +186,9 @@
       "span": 8.0
     }
   ],
-  "icons_invert": true
+  "icons_invert": true,
+  "life": {
+    "amount": 0.5,
+    "sat": 1.32
+  }
 }

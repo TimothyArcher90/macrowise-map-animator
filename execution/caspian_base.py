@@ -55,14 +55,16 @@ def _ramp(elev, stops=None):
     return out
 
 
-# Tema OSCURO: tierra casi negra con relieve sutil + oceano azul brillante
+# Tema OSCURO CON VIDA: no negro plano — verdes profundos en tierras bajas,
+# ocres en zonas secas, roca clara en la altura. El relieve se lee.
 HYPSO_DARK = [
-    (0,    (26, 30, 34)),
-    (400,  (30, 35, 40)),
-    (1200, (38, 44, 50)),
-    (2500, (48, 55, 62)),
-    (4200, (64, 72, 80)),
-    (5500, (96, 104, 112)),
+    (0,    (38, 58, 46)),     # verde profundo (llanura vegetada)
+    (350,  (46, 62, 48)),
+    (900,  (62, 66, 48)),     # vira a ocre
+    (1800, (78, 70, 52)),
+    (2800, (92, 82, 66)),     # roca
+    (4000, (118, 112, 102)),
+    (5500, (188, 190, 192)),  # nieve
 ]
 WATER_DARK_SHALLOW = (58, 158, 224)
 WATER_DARK_DEEP = (28, 118, 190)
@@ -129,6 +131,45 @@ def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None, theme="light")
     out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=45))
     out.save(out_path)
     return out_path, out.size
+
+
+def add_life(base_path, bbox, zoom, amount=0.45, sat=1.25, dark=False, out_path=None):
+    """DA VIDA al terreno mezclando imagen SATELITAL real (vegetacion, desiertos,
+    bosques) sobre la base estilizada. El satelite aporta color y micro-detalle;
+    la base aporta el relieve y la paleta. Resultado: terreno vivo, no plano.
+
+    amount: cuanto satelite se mezcla (0.3-0.6 suele ser lo bueno)
+    sat:    saturacion final (>1 = mas vivo)
+    """
+    import numpy as np
+    from PIL import Image, ImageEnhance
+    from fetch_basemap import fetch
+
+    sat_path = base_path.replace(".png", "_sat.png")
+    if not os.path.exists(sat_path):
+        fetch(bbox, min(zoom, 9), sat_path, source="esri")
+
+    base = Image.open(base_path).convert("RGB")
+    sky = Image.open(sat_path).convert("RGB").resize(base.size, Image.LANCZOS)
+    b = np.asarray(base).astype("float64") / 255.0
+    s = np.asarray(sky).astype("float64") / 255.0
+
+    # el satelite entra en SOFT LIGHT: aporta textura y color sin tapar la paleta
+    soft = np.where(s < 0.5, 2 * b * s + b * b * (1 - 2 * s),
+                    2 * b * (1 - s) + np.sqrt(np.clip(b, 0, 1)) * (2 * s - 1))
+    mixed = b * (1 - amount) + soft * amount
+    # ademas un toque del color crudo del satelite (vegetacion real)
+    mixed = mixed * 0.86 + s * 0.14
+    if dark:
+        mixed = mixed * 0.82          # el tema oscuro no debe aclararse de mas
+    mixed = np.clip(mixed, 0, 1)
+
+    img = Image.fromarray((mixed * 255).astype("uint8"), "RGB")
+    img = ImageEnhance.Color(img).enhance(sat)        # vida
+    img = ImageEnhance.Contrast(img).enhance(1.06)
+    out_path = out_path or base_path.replace(".png", "_life.png")
+    img.save(out_path)
+    return out_path
 
 
 def apply_highlight(basemap_path, bbox, names, out_path=None):
