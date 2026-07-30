@@ -16,21 +16,20 @@ sys.path.insert(0, HERE)
 from relief import _elevation, hillshade  # noqa
 
 
-# Rampa hipsometrica (elevacion m -> RGB), calibrada al look Caspian (tierra calida).
-# puntos: (altura, color)
+# Rampa hipsometrica CLARA estilo Caspian (terreno de papel crema/tostado, suave).
+# El color del pais va ENCIMA semi-transparente, asi que la base es tenue.
 HYPSO = [
-    (0,    (196, 214, 178)),   # costa / tierras bajas verdosas
-    (200,  (206, 208, 160)),   # llanura
-    (600,  (216, 200, 150)),   # tostado
-    (1200, (206, 178, 128)),   # tostado medio
-    (2000, (170, 140, 100)),   # montaña
-    (3000, (135, 110, 85)),    # montaña alta
-    (4000, (170, 155, 140)),   # roca gris
-    (5500, (235, 232, 226)),   # nieve
+    (0,    (226, 220, 200)),   # tierras bajas crema
+    (300,  (222, 212, 186)),   # llanura tostada clara
+    (900,  (212, 196, 166)),   # tostado
+    (1800, (196, 176, 148)),   # colina
+    (3000, (182, 162, 140)),   # montaña
+    (4200, (198, 186, 172)),   # roca clara
+    (5500, (238, 234, 228)),   # nieve
 ]
-# agua: teal con profundidad
-WATER_SHALLOW = (108, 165, 178)
-WATER_DEEP = (70, 120, 140)
+# agua: azul Caspian plano (leve gradiente)
+WATER_SHALLOW = (168, 200, 216)
+WATER_DEEP = (120, 165, 190)
 
 
 def _ramp(elev):
@@ -51,30 +50,51 @@ def _ramp(elev):
     return out
 
 
-def build_caspian(bbox, zoom, out_path, z_factor=2.9):
+def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None):
+    """Terreno claro estilo Caspian + tinte de pais semi-transparente ENCIMA
+    (el terreno se ve a traves del color). tints: {pais: '#hex'} o {pais: ['#hex', alpha]}."""
     import numpy as np
-    from PIL import Image, ImageFilter
+    from PIL import Image, ImageFilter, ImageDraw
     elev = _elevation(bbox, min(zoom, 10))
     land = _ramp(elev) / 255.0
-    # desaturar ~18% -> tonos tierra naturales (no ultrasaturado), estilo Caspian/JH
     lum = land.mean(axis=2, keepdims=True)
-    land = land * 0.82 + lum * 0.18
+    land = land * 0.85 + lum * 0.15   # leve desaturacion
 
-    # hillshade para volumen 3D (mas suave, menos duro)
-    hs = hillshade(elev, az=315, alt=42, z_factor=z_factor)[:, :, None]
-    shaded = land * (0.62 + 0.74 * hs)
-    shaded = np.clip(shaded, 0, 1)
+    # hillshade SUAVE (terreno de papel, no montaña dura)
+    hs = hillshade(elev, az=315, alt=45, z_factor=z_factor)[:, :, None]
+    shaded = np.clip(land * (0.74 + 0.42 * hs), 0, 1)
 
-    # agua: batimetria teal donde elev <= 0
+    # agua azul plana
     depth = np.clip(-elev, 0, 4000) / 4000.0
     water = (np.array(WATER_SHALLOW) / 255.0)[None, None, :] * (1 - depth[:, :, None]) + \
             (np.array(WATER_DEEP) / 255.0)[None, None, :] * depth[:, :, None]
     is_water = (elev <= 0)[:, :, None]
     img = np.where(is_water, water, shaded)
 
+    # --- TINTE DE PAIS semi-transparente (la firma de Caspian) ---
+    if tints:
+        from project import make_projector, download_natural_earth, country_rings
+        H, Wc = img.shape[0], img.shape[1]
+        proj = make_projector(bbox, 5, Wc, H)
+        ge = download_natural_earth(os.path.join(HERE, "..", ".tmp"), res="50m")
+        landmask = (~(elev <= 0))
+        for name, spec in tints.items():
+            if isinstance(spec, (list, tuple)):
+                hexc, a = spec[0], float(spec[1])
+            else:
+                hexc, a = spec, 0.42
+            col = np.array(_hex(hexc)) / 255.0
+            m = Image.new("L", (Wc, H), 0)
+            md = ImageDraw.Draw(m)
+            for ring in country_rings(ge, name):
+                if len(ring) > 2:
+                    md.polygon([tuple(proj(lo, la)) for lo, la in ring], fill=255)
+            k = (np.asarray(m).astype("float64") / 255.0)[:, :, None] * a
+            k = k * landmask[:, :, None]      # el tinte NO pinta el mar
+            img = img * (1 - k) + col[None, None, :] * k
+
     out = Image.fromarray((np.clip(img, 0, 1) * 255).astype("uint8"))
-    # microcontraste + leve suavizado para look editorial
-    out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=60))
+    out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=45))
     out.save(out_path)
     return out_path, out.size
 

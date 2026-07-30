@@ -157,11 +157,11 @@ def render(story, fmt, out_mp4):
 
     bpath = os.path.join(TMP, "basemap_%s_z%d.png" % (source, zoom))
     if source == "caspian":
-        # base de relieve hipsometrico generada (ingenieria inversa Caspian Report)
+        # terreno claro Caspian + tinte de pais semi-transparente (country_colors)
         if not os.path.exists(bpath):
             from caspian_base import build_caspian
-            print("generando base Caspian (relieve hipsometrico)...")
-            build_caspian(bbox, zoom, bpath)
+            print("generando base Caspian (terreno claro + tintes de pais)...")
+            build_caspian(bbox, zoom, bpath, tints=story.get("country_colors"))
     elif source == "vector":
         # estilo vector plano: colores precisos por pais + borde (look manual GeoLayers)
         if not os.path.exists(bpath):
@@ -175,9 +175,8 @@ def render(story, fmt, out_mp4):
                         "--bbox", *[str(x) for x in bbox], "--zoom", str(zoom),
                         "--source", source, "--out", bpath], check=True)
 
-    # MASCARA POR PAIS (solo relieve caspian): resalta pais, apaga vecinos.
-    # En 'vector' el realce ya va en el color del pais.
-    if story.get("highlight") and source == "caspian":
+    # MASCARA POR PAIS (opcional, off por defecto): el tinte de pais ya resalta.
+    if story.get("highlight_mask") and source == "caspian":
         hl_path = bpath.replace(".png", "_hl.png")
         if not os.path.exists(hl_path):
             from caspian_base import apply_highlight
