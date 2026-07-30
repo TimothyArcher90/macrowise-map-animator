@@ -548,8 +548,10 @@ def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
     # Perspectiva fuerte: el borde inferior se abre MUCHO por fuera del lienzo y
     # el superior se levanta por encima -> compresion progresiva hacia el fondo
     # (lo lejano se apelmaza arriba), que es lo que hace legible la inclinacion.
-    bulge = 1.9 * tilt
-    rise = 0.34 * tilt
+    # CALIBRADO: 1.9 deformaba el pais ("derretido"); 0.85 no se notaba.
+    # 1.15 da perspectiva legible sin romper la forma. tilt_deg util: 20-35.
+    bulge = 1.15 * tilt
+    rise = 0.20 * tilt
     dst = [(0, -H * rise), (W, -H * rise),
            (W * (1 + bulge), H), (-W * bulge, H)]
     src = [(0, 0), (W, 0), (W, H), (0, H)]

@@ -10,7 +10,7 @@
   "theme": "dark",
   "video_zoom": 8,
   "duration": 20,
-  "tilt_deg": 34,
+  "tilt_deg": 26,
   "dof": 0.62,
   "dof_mode": "tiltshift",
   "dof_band": 0.22,
