@@ -317,12 +317,24 @@ def render(story, fmt, out_mp4):
             if -50 < sx < W + 50 and -50 < sy < H + 50:
                 draw_label(d, sx, sy, lb["text"].upper(), alpha, W)
 
-        # etiquetas de PAIS: tamaño constante (no encogen con el zoom/tilt)
+        # etiquetas de PAIS: tamaño constante. Con keep=true la etiqueta se queda
+        # pegada al borde cuando el pais sale de cuadro (no desaparece en el zoom).
         for ml in story.get("map_labels", []):
             sx, sy = screen(ml["lon"], ml["lat"])
-            if -100 < sx < W + 100 and -100 < sy < H + 100:
-                _draw_country(d, sx, sy, ml["text"], ml.get("size", 1.0), W,
-                              ml.get("alpha", 0.82), dark=(theme == "dark"))
+            if ml.get("keep", True):
+                mgx = W * 0.13 * ml.get("size", 1.0)
+                mgy = H * 0.10
+                onscreen = (-mgx < sx < W + mgx) and (-mgy < sy < H + mgy)
+                sx = max(mgx, min(W - mgx, sx))
+                sy = max(mgy, min(H - mgy, sy))
+                # si el pais quedo MUY lejos del cuadro, se atenua en vez de gritar
+                fade = 1.0 if onscreen else 0.55
+            else:
+                fade = 1.0
+                if not (-100 < sx < W + 100 and -100 < sy < H + 100):
+                    continue
+            _draw_country(d, sx, sy, ml["text"], ml.get("size", 1.0), W,
+                          ml.get("alpha", 0.82) * fade, dark=(theme == "dark"))
 
         # marcador de FOCO pulsante
         if focus:

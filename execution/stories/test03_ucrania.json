@@ -1,0 +1,54 @@
+{
+  "_comment": "TEST 03 — Ucrania: valida TRAMAS RAYADAS (zonas urbanas/disputadas), frentes con flechas, alta densidad de ciudades y fronteras internas.",
+  "bbox": [22.0, 44.0, 42.0, 53.0],
+  "basemap_source": "caspian",
+  "theme": "light",
+  "video_zoom": 7,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.35,
+  "dof_mode": "radial",
+  "country_colors": {
+    "Ukraine": ["#4C79C4", 0.5],
+    "Russia": ["#D2504C", 0.5],
+    "Belarus": ["#C8A86A", 0.35],
+    "Poland": ["#E8E0CC", 0.3],
+    "Moldova": ["#9FBF8C", 0.35]
+  },
+  "rivers": { "color": "#4E96C8", "width": 3, "alpha": 175 },
+  "urban": { "color": "#5A5550", "alpha": 110, "hatch": true },
+  "borders": { "color": "#2A2A32", "width": 3, "alpha": 175 },
+  "map_labels": [
+    { "lon": 31.5, "lat": 49.2, "text": "UCRANIA", "size": 1.2, "alpha": 0.88 },
+    { "lon": 39.5, "lat": 51.5, "text": "RUSIA",   "size": 0.9, "alpha": 0.8 },
+    { "lon": 27.8, "lat": 52.4, "text": "BIELORRUSIA", "size": 0.55, "alpha": 0.75 }
+  ],
+  "cities": [
+    { "place": "Kyiv",     "name": "Kiev",    "t": 3 },
+    { "place": "Kharkiv",  "name": "Járkov",  "t": 5 },
+    { "place": "Odesa",    "name": "Odesa",   "t": 6, "side": "left" },
+    { "place": "Donetsk",  "name": "Donetsk", "t": 8 },
+    { "place": "Lviv",     "name": "Leópolis","t": 9, "side": "left" },
+    { "place": "Mariupol", "name": "Mariúpol","t": 11 }
+  ],
+  "icons": [
+    { "place": "Odesa",   "kind": "anchor", "t": 7,  "size": 0.011 },
+    { "place": "Donetsk", "kind": "alert",  "t": 12, "size": 0.012, "color": "#C0392B" }
+  ],
+  "callouts": [
+    { "lon": 37.8, "lat": 48.0, "text": "Frente del Donbás", "t": 13, "dx": 0.10, "dy": 0.13, "fs": 50 },
+    { "lon": 31.0, "lat": 46.5, "text": "Corredor del\nmar Negro", "t": 15, "dx": -0.14, "dy": 0.12, "fs": 52 }
+  ],
+  "arrows": [
+    { "from_place": "Kharkiv", "to_place": "Donetsk", "t": [14, 16.5], "color": "#B03028", "width": 7 },
+    { "from_place": "Odesa",   "to_place": "Mariupol", "t": [16, 18.5], "color": "#1A1A22", "width": 6, "curve": 0.2 }
+  ],
+  "banners": [ { "text": "El tablero del este", "in": 1.2, "out": 6.0, "y": 0.40 } ],
+  "dates": [ { "text": "2026", "in": 0.6, "out": 19.5 } ],
+  "camera": [
+    { "t": 0.0,  "lon": 31.5, "lat": 48.8, "span": 19.0, "dwell": 1.3 },
+    { "t": 7.0,  "lon": 33.5, "lat": 48.6, "span": 14.5, "dwell": 1.2 },
+    { "t": 14.0, "lon": 36.0, "lat": 48.2, "span": 10.5, "dwell": 1.3 },
+    { "t": 20.0, "lon": 32.5, "lat": 48.8, "span": 17.0 }
+  ]
+}

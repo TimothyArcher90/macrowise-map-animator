@@ -113,9 +113,13 @@ def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None, theme="light")
             k = (np.asarray(m).astype("float64") / 255.0)[:, :, None] * a
             k = k * landmask[:, :, None]      # el tinte NO pinta el mar
             # MULTIPLY (tecnica canonica GEOlayers/AE): preserva el relieve bajo el
-            # color en vez de taparlo. Se mezcla con screen suave para no ensuciar.
+            # color en vez de taparlo. Sobre terreno CLARO (desierto) el multiply
+            # lava el color, asi que se compensa saturando segun la luminosidad.
             mult = img * col[None, None, :]
             mult = mult * 0.82 + (1 - (1 - img) * (1 - col[None, None, :] * 0.35)) * 0.18
+            terrain_lum = img.mean(axis=2, keepdims=True)
+            boost = np.clip((terrain_lum - 0.45) * 1.15, 0, 0.5)   # 0 en oscuro, ~.5 en claro
+            mult = mult * (1 - boost) + col[None, None, :] * boost
             img = img * (1 - k) + mult * k
 
     out = Image.fromarray((np.clip(img, 0, 1) * 255).astype("uint8"))
