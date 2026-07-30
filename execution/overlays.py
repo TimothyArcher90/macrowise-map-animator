@@ -108,8 +108,8 @@ def pin(d, x, y, color, font_obj=None, label=None, r=34, alpha=1.0):
 
 
 def callout_box(d, x, y, text, font_obj, anchor=None, alpha=1.0,
-                bg=(255, 255, 255), ink=(24, 24, 28), pad=16, radius=10,
-                shadow=True, lead=(255, 255, 255), lead_w=3):
+                bg=(255, 255, 255), ink=(24, 24, 28), pad=14, radius=8,
+                shadow=True, lead=(255, 255, 255), lead_w=2):
     """Caja blanca de call-out con linea lider curvada al punto del mapa.
     Es el elemento de 'Mountains / Urban areas / Rough seas' de la referencia."""
     lines = text.split("\n")
@@ -127,10 +127,11 @@ def callout_box(d, x, y, text, font_obj, anchor=None, alpha=1.0,
         d.line([ex, ey, ax, ay], fill=_a(lead, 0.95 * alpha), width=lead_w)
         d.ellipse([ax - 5, ay - 5, ax + 5, ay + 5], fill=_a(lead, alpha))
 
+    # sobria: sombra apenas insinuada y caja limpia (antes competia con el mapa)
     if shadow:
-        d.rounded_rectangle([x0 + 5, y0 + 6, x1 + 5, y1 + 6], radius=radius,
-                            fill=_a((0, 0, 0), 0.22 * alpha))
-    d.rounded_rectangle([x0, y0, x1, y1], radius=radius, fill=_a(bg, 0.97 * alpha))
+        d.rounded_rectangle([x0 + 2, y0 + 3, x1 + 2, y1 + 3], radius=radius,
+                            fill=_a((0, 0, 0), 0.10 * alpha))
+    d.rounded_rectangle([x0, y0, x1, y1], radius=radius, fill=_a(bg, 0.94 * alpha))
     cy = y0 + pad * 0.7
     for ln in lines:
         lw = d.textlength(ln, font=font_obj)

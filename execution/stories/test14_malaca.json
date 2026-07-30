@@ -1,0 +1,152 @@
+{
+  "basemap_source": "caspian",
+  "theme": "dark",
+  "video_zoom": 8,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.3,
+  "dof_mode": "radial",
+  "life": {
+    "amount": 0.55,
+    "sat": 1.22
+  },
+  "icons_invert": true,
+  "dates": [
+    {
+      "text": "2026",
+      "in": 0.6,
+      "out": 19.5
+    }
+  ],
+  "_comment": "Estrecho de Malaca — cuello de botella del comercio asiatico",
+  "bbox": [
+    97.0,
+    -1.0,
+    106.0,
+    7.0
+  ],
+  "rivers": {
+    "color": "#35C4F0",
+    "width": 2,
+    "alpha": 200
+  },
+  "coast_highlight": {
+    "countries": [
+      "Malaysia"
+    ],
+    "color": "#F08A24",
+    "width": 3,
+    "glow": false,
+    "min_ring_px": 700,
+    "alpha": 220
+  },
+  "map_labels": [
+    {
+      "lon": 101.5,
+      "lat": 4.2,
+      "text": "MALASIA",
+      "size": 0.8
+    },
+    {
+      "lon": 100.0,
+      "lat": 1.0,
+      "text": "SUMATRA",
+      "size": 0.7,
+      "alpha": 0.72
+    }
+  ],
+  "cities": [
+    {
+      "place": "Singapore",
+      "name": "Singapur",
+      "t": 3
+    },
+    {
+      "place": "Kuala Lumpur",
+      "name": "Kuala Lumpur",
+      "t": 5,
+      "side": "left"
+    },
+    {
+      "place": "Medan",
+      "name": "Medan",
+      "t": 7
+    }
+  ],
+  "icons": [
+    {
+      "place": "Singapore",
+      "kind": "anchor",
+      "t": 4,
+      "size": 0.012
+    },
+    {
+      "lon": 100.6,
+      "lat": 3.2,
+      "kind": "ship",
+      "t": 9,
+      "size": 0.012
+    }
+  ],
+  "callouts": [
+    {
+      "lon": 100.8,
+      "lat": 2.6,
+      "text": "Estrecho de Malaca\n2.7 km en su punto\nmás angosto",
+      "t": 10,
+      "dx": -0.16,
+      "dy": -0.12,
+      "fs": 56
+    }
+  ],
+  "arrows": [
+    {
+      "from_place": "Medan",
+      "to_place": "Singapore",
+      "t": [
+        13,
+        16.5
+      ],
+      "color": "#F0483C",
+      "width": 6,
+      "curve": 0.15
+    }
+  ],
+  "banners": [
+    {
+      "text": "El cuello de botella",
+      "in": 1.2,
+      "out": 6.0,
+      "y": 0.4
+    }
+  ],
+  "camera": [
+    {
+      "t": 0,
+      "lon": 101.5,
+      "lat": 3.0,
+      "span": 9.5,
+      "dwell": 1.6
+    },
+    {
+      "t": 8,
+      "lon": 101.3,
+      "lat": 2.8,
+      "span": 8.0,
+      "dwell": 1.5
+    },
+    {
+      "t": 15,
+      "lon": 101.0,
+      "lat": 2.6,
+      "span": 7.0,
+      "dwell": 1.5
+    },
+    {
+      "t": 20,
+      "lon": 101.4,
+      "lat": 3.0,
+      "span": 8.8
+    }
+  ]
+}

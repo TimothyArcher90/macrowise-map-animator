@@ -1,0 +1,141 @@
+{
+  "basemap_source": "caspian",
+  "theme": "dark",
+  "video_zoom": 8,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.3,
+  "dof_mode": "radial",
+  "life": {
+    "amount": 0.55,
+    "sat": 1.22
+  },
+  "icons_invert": true,
+  "dates": [
+    {
+      "text": "2026",
+      "in": 0.6,
+      "out": 19.5
+    }
+  ],
+  "_comment": "Islandia — isla volcanica, latitud alta (valida proyeccion y relieve costero)",
+  "bbox": [
+    -25.0,
+    63.0,
+    -13.0,
+    67.0
+  ],
+  "coast_highlight": {
+    "countries": [
+      "Iceland"
+    ],
+    "color": "#F08A24",
+    "width": 3,
+    "glow": false,
+    "min_ring_px": 800,
+    "alpha": 225
+  },
+  "rivers": {
+    "color": "#35C4F0",
+    "width": 2,
+    "alpha": 205
+  },
+  "lakes": {
+    "color": "#35C4F0",
+    "alpha": 210
+  },
+  "map_labels": [
+    {
+      "lon": -18.8,
+      "lat": 64.9,
+      "text": "ISLANDIA",
+      "size": 1.0
+    }
+  ],
+  "cities": [
+    {
+      "place": "Reykjavik",
+      "name": "Reikiavik",
+      "t": 3,
+      "side": "left"
+    },
+    {
+      "place": "Akureyri",
+      "name": "Akureyri",
+      "t": 6
+    }
+  ],
+  "icons": [
+    {
+      "place": "Reykjavik",
+      "kind": "anchor",
+      "t": 4,
+      "size": 0.012
+    },
+    {
+      "lon": -19.6,
+      "lat": 63.6,
+      "kind": "alert",
+      "t": 9,
+      "size": 0.013,
+      "color": "#C0392B"
+    }
+  ],
+  "callouts": [
+    {
+      "lon": -19.6,
+      "lat": 63.63,
+      "text": "Volcán Eyjafjallajökull",
+      "t": 10,
+      "dx": 0.12,
+      "dy": 0.14,
+      "fs": 50
+    },
+    {
+      "lon": -16.8,
+      "lat": 64.4,
+      "text": "Glaciar Vatnajökull",
+      "t": 14,
+      "dx": 0.1,
+      "dy": -0.14,
+      "fs": 50
+    }
+  ],
+  "banners": [
+    {
+      "text": "Hielo y fuego",
+      "in": 1.2,
+      "out": 6.0,
+      "y": 0.4
+    }
+  ],
+  "camera": [
+    {
+      "t": 0,
+      "lon": -18.8,
+      "lat": 64.9,
+      "span": 12.5,
+      "dwell": 1.6
+    },
+    {
+      "t": 8,
+      "lon": -19.0,
+      "lat": 64.7,
+      "span": 10.5,
+      "dwell": 1.5
+    },
+    {
+      "t": 15,
+      "lon": -18.6,
+      "lat": 64.6,
+      "span": 9.0,
+      "dwell": 1.5
+    },
+    {
+      "t": 20,
+      "lon": -18.8,
+      "lat": 64.9,
+      "span": 11.5
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "basemap_source": "caspian",
+  "theme": "dark",
+  "video_zoom": 8,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.3,
+  "dof_mode": "radial",
+  "life": {
+    "amount": 0.55,
+    "sat": 1.22
+  },
+  "icons_invert": true,
+  "dates": [
+    {
+      "text": "2026",
+      "in": 0.6,
+      "out": 19.5
+    }
+  ],
+  "_comment": "Bosforo — Turquia, puerta del mar Negro",
+  "bbox": [
+    26.0,
+    38.0,
+    34.0,
+    44.0
+  ],
+  "country_colors": {
+    "Turkey": [
+      "#E8B44C",
+      0.5
+    ]
+  },
+  "rivers": {
+    "color": "#35C4F0",
+    "width": 2,
+    "alpha": 190
+  },
+  "map_labels": [
+    {
+      "lon": 32.0,
+      "lat": 39.5,
+      "text": "TURQUÍA",
+      "size": 0.9
+    },
+    {
+      "lon": 28.5,
+      "lat": 43.2,
+      "text": "MAR NEGRO",
+      "size": 0.6,
+      "alpha": 0.7
+    }
+  ],
+  "cities": [
+    {
+      "place": "Istanbul",
+      "name": "Estambul",
+      "t": 3
+    },
+    {
+      "place": "Ankara",
+      "name": "Ankara",
+      "t": 6
+    },
+    {
+      "place": "Izmir",
+      "name": "Esmirna",
+      "t": 8,
+      "side": "left"
+    }
+  ],
+  "icons": [
+    {
+      "place": "Istanbul",
+      "kind": "anchor",
+      "t": 4,
+      "size": 0.012
+    }
+  ],
+  "callouts": [
+    {
+      "lon": 29.0,
+      "lat": 41.1,
+      "text": "Bósforo\n700 m de ancho",
+      "t": 10,
+      "dx": 0.16,
+      "dy": -0.1,
+      "fs": 54
+    }
+  ],
+  "banners": [
+    {
+      "text": "La puerta del mar Negro",
+      "in": 1.2,
+      "out": 6.0,
+      "y": 0.4
+    }
+  ],
+  "camera": [
+    {
+      "t": 0,
+      "lon": 30.0,
+      "lat": 40.5,
+      "span": 8.5,
+      "dwell": 1.6
+    },
+    {
+      "t": 8,
+      "lon": 29.6,
+      "lat": 40.8,
+      "span": 7.2,
+      "dwell": 1.5
+    },
+    {
+      "t": 15,
+      "lon": 29.2,
+      "lat": 41.0,
+      "span": 6.2,
+      "dwell": 1.5
+    },
+    {
+      "t": 20,
+      "lon": 29.8,
+      "lat": 40.7,
+      "span": 7.8
+    }
+  ]
+}

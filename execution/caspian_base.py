@@ -37,6 +37,24 @@ WATER_SHALLOW = (168, 200, 216)
 WATER_DEEP = (120, 165, 190)
 
 
+def softlight(b, s):
+    """Soft-light del W3C. A diferencia de MULTIPLY, preserva la luminancia:
+    apilar hillshade x AO x color por multiplicacion oscurece ~39% (medido),
+    porque cada capa tiene media <1 y las medias se multiplican."""
+    import numpy as np
+    d = np.where(b <= 0.25, ((16 * b - 12) * b + 4) * b, np.sqrt(np.clip(b, 0, 1)))
+    return np.where(s <= 0.5, b - (1 - 2 * s) * b * (1 - b), b + (2 * s - 1) * (d - b))
+
+
+def norm_mid(a, strength=1.0):
+    """Re-centra una capa de sombra en 0.5 (el punto neutro de soft-light).
+    SIN esto, una capa con media 0.35 actua como un multiply disfrazado y
+    oscurece igual. Es la clave del apilado cartografico correcto."""
+    import numpy as np
+    a = (a - a.mean()) / (a.std() + 1e-9)
+    return np.clip(0.5 + a * 0.18 * strength, 0, 1)
+
+
 def _ramp(elev, stops=None):
     import numpy as np
     h, w = elev.shape
@@ -83,9 +101,19 @@ def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None, theme="light")
     lum = land.mean(axis=2, keepdims=True)
     land = land * 0.85 + lum * 0.15   # leve desaturacion
 
-    # hillshade: en oscuro va mas marcado (la textura es lo unico que se ve)
-    hs = hillshade(elev, az=315, alt=45, z_factor=z_factor)[:, :, None]
-    shaded = np.clip(land * ((0.55 + 0.85 * hs) if dark else (0.74 + 0.42 * hs)), 0, 1)
+    # APILADO CARTOGRAFICO (orden Imhof/Suizo) en SOFT-LIGHT normalizado, no
+    # multiply: el multiply oscurecia ~39%. Cada capa se re-centra en 0.5.
+    #   1) multi-direccional (volumen, crestas en todas las orientaciones)
+    #   2) luz clave a 315 grados (da la lectura y la direccion)
+    shaded = land
+    hs_multi = np.zeros_like(elev, dtype="float64")
+    for az in (225.0, 270.0, 315.0, 360.0):          # las 4 del USGS OF 92-422
+        hs_multi += hillshade(elev, az=az, alt=45, z_factor=z_factor)
+    hs_multi /= 4.0
+    shaded = softlight(shaded, norm_mid(hs_multi, 1.0)[:, :, None])
+    hs_key = hillshade(elev, az=315, alt=42, z_factor=z_factor)
+    shaded = softlight(shaded, norm_mid(hs_key, 1.5 if dark else 1.2)[:, :, None])
+    shaded = np.clip(shaded, 0, 1)
 
     # agua con DEGRADADO DE PROFUNDIDAD marcado (claro en la costa -> azul intenso
     # mar adentro), como en la referencia. Curva gamma para que el cambio se note

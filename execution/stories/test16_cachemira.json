@@ -1,0 +1,143 @@
+{
+  "basemap_source": "caspian",
+  "theme": "dark",
+  "video_zoom": 8,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.3,
+  "dof_mode": "radial",
+  "life": {
+    "amount": 0.55,
+    "sat": 1.22
+  },
+  "icons_invert": true,
+  "dates": [
+    {
+      "text": "2026",
+      "in": 0.6,
+      "out": 19.5
+    }
+  ],
+  "_comment": "Cachemira — Himalaya, relieve extremo (valida el hillshade en montaña alta)",
+  "bbox": [
+    72.0,
+    31.0,
+    80.0,
+    37.5
+  ],
+  "country_colors": {
+    "India": [
+      "#5FA88C",
+      0.45
+    ],
+    "Pakistan": [
+      "#7BA7D9",
+      0.45
+    ],
+    "China": [
+      "#C85A52",
+      0.4
+    ]
+  },
+  "rivers": {
+    "color": "#35C4F0",
+    "width": 2,
+    "alpha": 200
+  },
+  "map_labels": [
+    {
+      "lon": 75.5,
+      "lat": 32.0,
+      "text": "INDIA",
+      "size": 0.8
+    },
+    {
+      "lon": 72.8,
+      "lat": 33.5,
+      "text": "PAKISTÁN",
+      "size": 0.7
+    },
+    {
+      "lon": 79.0,
+      "lat": 36.0,
+      "text": "CHINA",
+      "size": 0.7,
+      "alpha": 0.72
+    }
+  ],
+  "cities": [
+    {
+      "place": "Srinagar",
+      "name": "Srinagar",
+      "t": 3
+    },
+    {
+      "place": "Islamabad",
+      "name": "Islamabad",
+      "t": 6,
+      "side": "left"
+    },
+    {
+      "place": "Leh",
+      "name": "Leh",
+      "t": 8
+    }
+  ],
+  "callouts": [
+    {
+      "lon": 76.5,
+      "lat": 34.5,
+      "text": "Línea de Control\n740 km",
+      "t": 10,
+      "dx": 0.14,
+      "dy": 0.12,
+      "fs": 54
+    },
+    {
+      "lon": 77.5,
+      "lat": 35.5,
+      "text": "Picos de 7000 m",
+      "t": 14,
+      "dx": 0.1,
+      "dy": -0.14,
+      "fs": 50
+    }
+  ],
+  "banners": [
+    {
+      "text": "El techo disputado",
+      "in": 1.2,
+      "out": 6.0,
+      "y": 0.4
+    }
+  ],
+  "camera": [
+    {
+      "t": 0,
+      "lon": 76.0,
+      "lat": 34.2,
+      "span": 8.0,
+      "dwell": 1.6
+    },
+    {
+      "t": 8,
+      "lon": 76.4,
+      "lat": 34.4,
+      "span": 6.8,
+      "dwell": 1.5
+    },
+    {
+      "t": 15,
+      "lon": 76.8,
+      "lat": 34.6,
+      "span": 5.8,
+      "dwell": 1.5
+    },
+    {
+      "t": 20,
+      "lon": 76.2,
+      "lat": 34.3,
+      "span": 7.4
+    }
+  ]
+}

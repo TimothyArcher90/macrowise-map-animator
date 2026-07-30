@@ -455,7 +455,8 @@ def render(story, fmt, out_mp4):
 
         # CAJAS DE CALL-OUT blancas con linea lider (referencia "Mountains/Urban areas")
         for co in story.get("callouts", []):
-            oa = max(0.0, min(1.0, (t - co.get("t", 0)) / 0.5)) if co.get("t") else 1.0
+            # aparicion TRANQUILA: 1.1s con easing suave (antes 0.5s lineal = golpe)
+            oa = ease(max(0.0, min(1.0, (t - co.get("t", 0)) / 1.1))) if co.get("t") else 1.0
             if oa <= 0:
                 continue
             ax, ay = screen(co["lon"], co["lat"])

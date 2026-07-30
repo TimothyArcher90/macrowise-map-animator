@@ -1,0 +1,161 @@
+{
+  "basemap_source": "caspian",
+  "theme": "dark",
+  "video_zoom": 8,
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.3,
+  "dof_mode": "radial",
+  "life": {
+    "amount": 0.55,
+    "sat": 1.22
+  },
+  "icons_invert": true,
+  "dates": [
+    {
+      "text": "2026",
+      "in": 0.6,
+      "out": 19.5
+    }
+  ],
+  "_comment": "Sahel — desierto/semiarido, valida la paleta en terreno sin vegetacion",
+  "bbox": [
+    -6.0,
+    10.0,
+    10.0,
+    22.0
+  ],
+  "country_colors": {
+    "Mali": [
+      "#E8B44C",
+      0.45
+    ],
+    "Niger": [
+      "#C89A5A",
+      0.45
+    ],
+    "Burkina Faso": [
+      "#7BA77A",
+      0.42
+    ],
+    "Nigeria": [
+      "#5FA88C",
+      0.4
+    ]
+  },
+  "rivers": {
+    "color": "#35C4F0",
+    "width": 3,
+    "alpha": 210
+  },
+  "map_labels": [
+    {
+      "lon": -2.0,
+      "lat": 18.0,
+      "text": "MALI",
+      "size": 0.85
+    },
+    {
+      "lon": 8.0,
+      "lat": 18.0,
+      "text": "NÍGER",
+      "size": 0.8
+    },
+    {
+      "lon": -1.5,
+      "lat": 12.5,
+      "text": "BURKINA",
+      "size": 0.55,
+      "alpha": 0.72
+    }
+  ],
+  "cities": [
+    {
+      "place": "Bamako",
+      "name": "Bamako",
+      "t": 3,
+      "side": "left"
+    },
+    {
+      "place": "Niamey",
+      "name": "Niamey",
+      "t": 5
+    },
+    {
+      "place": "Timbuktu",
+      "name": "Tombuctú",
+      "t": 7
+    }
+  ],
+  "icons": [
+    {
+      "lon": 2.0,
+      "lat": 16.0,
+      "kind": "alert",
+      "t": 9,
+      "size": 0.013,
+      "color": "#C0392B"
+    }
+  ],
+  "callouts": [
+    {
+      "lon": 1.5,
+      "lat": 15.5,
+      "text": "Franja del Sahel\n5400 km de ancho",
+      "t": 10,
+      "dx": 0.14,
+      "dy": -0.13,
+      "fs": 54
+    }
+  ],
+  "arrows": [
+    {
+      "from_place": "Bamako",
+      "to_place": "Niamey",
+      "t": [
+        13,
+        16.5
+      ],
+      "color": "#1A1A22",
+      "width": 6,
+      "curve": 0.12
+    }
+  ],
+  "banners": [
+    {
+      "text": "La franja frágil",
+      "in": 1.2,
+      "out": 6.0,
+      "y": 0.4
+    }
+  ],
+  "camera": [
+    {
+      "t": 0,
+      "lon": 2.0,
+      "lat": 16.0,
+      "span": 16.0,
+      "dwell": 1.6
+    },
+    {
+      "t": 8,
+      "lon": 1.6,
+      "lat": 15.6,
+      "span": 13.5,
+      "dwell": 1.5
+    },
+    {
+      "t": 15,
+      "lon": 1.2,
+      "lat": 15.2,
+      "span": 11.5,
+      "dwell": 1.5
+    },
+    {
+      "t": 20,
+      "lon": 1.8,
+      "lat": 15.8,
+      "span": 14.5
+    }
+  ]
+}
