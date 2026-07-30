@@ -78,14 +78,22 @@ def bezier(p0, p1, curve=0.28, steps=60):
 
 
 def city_dot(d, x, y, name, font_obj, alpha=1.0, r=9,
-             fill=(255, 214, 61), ink=(40, 36, 30), halo=(255, 255, 255)):
-    """Punto de ciudad amarillo con borde + nombre con halo (estilo Caspian)."""
+             fill=(255, 214, 61), ink=(40, 36, 30), halo=(255, 255, 255),
+             offset=0, side="right"):
+    """Punto de ciudad + nombre con halo. 'offset' separa el texto cuando hay un
+    icono en el mismo punto (evita que se pisen); 'side' lo pone a izq/der."""
     d.ellipse([x - r, y - r, x + r, y + r], fill=_a(fill, alpha),
               outline=_a((60, 54, 44), alpha), width=2)
     if name:
-        tx, ty = x + r + 8, y - r - 2
-        for ox, oy in ((-2, 0), (2, 0), (0, -2), (0, 2)):
-            d.text((tx + ox, ty + oy), name, fill=_a(halo, 0.85 * alpha), font=font_obj)
+        gap = r + 8 + offset
+        if side == "left":
+            tw = d.textlength(name, font=font_obj)
+            tx = x - gap - tw
+        else:
+            tx = x + gap
+        ty = y - r - 2
+        for ox, oy in ((-2, 0), (2, 0), (0, -2), (0, 2), (-2, -2), (2, 2)):
+            d.text((tx + ox, ty + oy), name, fill=_a(halo, 0.9 * alpha), font=font_obj)
         d.text((tx, ty), name, fill=_a(ink, alpha), font=font_obj)
 
 

@@ -1,6 +1,11 @@
 {
   "_comment": "TEST 01 — Taiwan tema OSCURO estilo referencia: tierra negra + oceano azul + rios + costa resaltada + call-outs + iconos + tilt-shift. Lugares por NOMBRE.",
-  "bbox": [116.0, 20.5, 125.5, 27.5],
+  "bbox": [
+    116.0,
+    20.5,
+    125.5,
+    27.5
+  ],
   "basemap_source": "caspian",
   "theme": "dark",
   "video_zoom": 8,
@@ -10,41 +15,175 @@
   "dof_mode": "tiltshift",
   "dof_band": 0.26,
   "dof_focus": 0.52,
-  "rivers": { "color": "#3FA9E8", "width": 2, "alpha": 190 },
-  "lakes": { "color": "#3FA9E8", "alpha": 200 },
-  "coast_highlight": { "countries": ["Taiwan"], "color": "#F08A24", "width": 7, "glow": true },
+  "rivers": {
+    "color": "#3FA9E8",
+    "width": 2,
+    "alpha": 190
+  },
+  "lakes": {
+    "color": "#3FA9E8",
+    "alpha": 200
+  },
+  "coast_highlight": {
+    "countries": [
+      "Taiwan"
+    ],
+    "color": "#F08A24",
+    "width": 3,
+    "glow": false,
+    "min_ring_px": 900,
+    "alpha": 230
+  },
   "country_colors": {},
   "map_labels": [
-    { "lon": 120.95, "lat": 23.75, "text": "TAIWÁN", "size": 1.5, "alpha": 0.85 },
-    { "lon": 118.0,  "lat": 25.6,  "text": "CHINA",  "size": 1.0, "alpha": 0.7 }
+    {
+      "lon": 120.95,
+      "lat": 23.75,
+      "text": "TAIWÁN",
+      "size": 1.5,
+      "alpha": 0.85
+    },
+    {
+      "lon": 118.0,
+      "lat": 25.6,
+      "text": "CHINA",
+      "size": 1.0,
+      "alpha": 0.7
+    }
   ],
   "cities": [
-    { "place": "Taipei",    "name": "Taipéi",    "t": 3 },
-    { "place": "Taichung",  "name": "Taichung",  "t": 5 },
-    { "place": "Kaohsiung", "name": "Kaohsiung", "t": 6 },
-    { "place": "Fuzhou",    "name": "Fuzhou",    "t": 8 },
-    { "place": "Xiamen",    "name": "Xiamen",    "t": 9 }
+    {
+      "place": "Taipei",
+      "name": "Taipéi",
+      "t": 3
+    },
+    {
+      "place": "Taichung",
+      "name": "Taichung",
+      "t": 5
+    },
+    {
+      "place": "Kaohsiung",
+      "name": "Kaohsiung",
+      "t": 6,
+      "side": "left"
+    },
+    {
+      "place": "Fuzhou",
+      "name": "Fuzhou",
+      "t": 8
+    },
+    {
+      "place": "Xiamen",
+      "name": "Xiamen",
+      "t": 9
+    }
   ],
   "callouts": [
-    { "lon": 121.0, "lat": 23.6, "text": "Montañas", "t": 10, "dx": 0.14, "dy": 0.02, "fs": 46 },
-    { "lon": 120.2, "lat": 23.1, "text": "Pocas playas\nde desembarco", "t": 12, "dx": -0.18, "dy": -0.10, "fs": 52 },
-    { "lon": 119.0, "lat": 24.6, "text": "Estrecho: 180 km", "t": 14, "dx": -0.05, "dy": -0.14, "fs": 50 }
+    {
+      "lon": 121.0,
+      "lat": 23.6,
+      "text": "Montañas",
+      "t": 10,
+      "dx": 0.14,
+      "dy": 0.02,
+      "fs": 46
+    },
+    {
+      "lon": 120.2,
+      "lat": 23.1,
+      "text": "Pocas playas\nde desembarco",
+      "t": 12,
+      "dx": -0.18,
+      "dy": -0.1,
+      "fs": 52
+    },
+    {
+      "lon": 119.0,
+      "lat": 24.6,
+      "text": "Estrecho: 180 km",
+      "t": 14,
+      "dx": -0.05,
+      "dy": -0.14,
+      "fs": 50
+    }
   ],
   "icons": [
-    { "place": "Kaohsiung", "kind": "anchor", "t": 7,  "size": 0.013 },
-    { "place": "Taipei",    "kind": "base",   "t": 11, "size": 0.013 },
-    { "lon": 119.6, "lat": 24.9, "kind": "ship", "t": 13, "size": 0.013 }
+    {
+      "place": "Kaohsiung",
+      "kind": "anchor",
+      "t": 7,
+      "size": 0.013
+    },
+    {
+      "place": "Taipei",
+      "kind": "base",
+      "t": 11,
+      "size": 0.013
+    },
+    {
+      "lon": 119.6,
+      "lat": 24.9,
+      "kind": "ship",
+      "t": 13,
+      "size": 0.013
+    }
   ],
   "arrows": [
-    { "from_place": "Fuzhou", "to_place": "Taipei", "t": [15, 18],
-      "color": "#F0483C", "width": 7, "curve": 0.18 }
+    {
+      "from_place": "Fuzhou",
+      "to_place": "Taipei",
+      "t": [
+        15,
+        18
+      ],
+      "color": "#F0483C",
+      "width": 7,
+      "curve": 0.18
+    }
   ],
-  "banners": [ { "text": "El punto de quiebre", "in": 1.2, "out": 6.0, "y": 0.40 } ],
-  "dates": [ { "text": "2026", "in": 0.6, "out": 19.5 } ],
+  "banners": [
+    {
+      "text": "El punto de quiebre",
+      "in": 1.2,
+      "out": 6.0,
+      "y": 0.4
+    }
+  ],
+  "dates": [
+    {
+      "text": "2026",
+      "in": 0.6,
+      "out": 19.5
+    }
+  ],
   "camera": [
-    { "t": 0.0,  "lon": 120.8, "lat": 24.0, "span": 9.0, "dwell": 1.3 },
-    { "t": 7.0,  "lon": 120.9, "lat": 23.8, "span": 6.5, "dwell": 1.2 },
-    { "t": 13.0, "lon": 120.4, "lat": 23.6, "span": 5.0, "dwell": 1.2 },
-    { "t": 20.0, "lon": 120.6, "lat": 24.2, "span": 8.0 }
+    {
+      "t": 0.0,
+      "lon": 120.8,
+      "lat": 24.0,
+      "span": 9.0,
+      "dwell": 1.3
+    },
+    {
+      "t": 7.0,
+      "lon": 120.9,
+      "lat": 23.8,
+      "span": 6.5,
+      "dwell": 1.2
+    },
+    {
+      "t": 13.0,
+      "lon": 120.4,
+      "lat": 23.6,
+      "span": 5.0,
+      "dwell": 1.2
+    },
+    {
+      "t": 20.0,
+      "lon": 120.6,
+      "lat": 24.2,
+      "span": 8.0
+    }
   ]
 }

@@ -319,7 +319,8 @@ def render(story, fmt, out_mp4):
         for ml in story.get("map_labels", []):
             sx, sy = screen(ml["lon"], ml["lat"])
             if -100 < sx < W + 100 and -100 < sy < H + 100:
-                _draw_country(d, sx, sy, ml["text"], ml.get("size", 1.0), W, ml.get("alpha", 0.82))
+                _draw_country(d, sx, sy, ml["text"], ml.get("size", 1.0), W,
+                              ml.get("alpha", 0.82), dark=(theme == "dark"))
 
         # marcador de FOCO pulsante
         if focus:
@@ -358,8 +359,19 @@ def render(story, fmt, out_mp4):
                 continue
             sx, sy = screen(c["lon"], c["lat"])
             if -60 < sx < W + 60 and -60 < sy < H + 60:
+                # si hay un icono en esta misma coordenada, corre el nombre para no pisarlo
+                off = 0
+                for ic in story.get("icons", []):
+                    if abs(ic.get("lon", 1e9) - c["lon"]) < 1e-4 and \
+                       abs(ic.get("lat", 1e9) - c["lat"]) < 1e-4:
+                        off = int(W * ic.get("size", 0.012) * 1.6)
+                        break
                 OV.city_dot(d, sx, sy, c.get("name", ""), font(int(W / 62), bold=False),
-                            alpha=ca, r=int(W / 200))
+                            alpha=ca, r=int(W / 200), offset=off,
+                            side=c.get("side", "right"),
+                            ink=_hexc(c.get("ink", "#28241E")) if theme != "dark" else (245, 246, 248),
+                            halo=(255, 255, 255) if theme != "dark" else (10, 12, 16),
+                            fill=_hexc(c.get("dot", "#FFD63D")))
 
         # ICONOS en coordenadas (ancla, barco, avion, alerta, base)
         for ic in story.get("icons", []):
@@ -498,15 +510,21 @@ def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
     return sky, fwd
 
 
-def _draw_country(d, x, y, text, size, W, alpha):
-    # texto de pais grande con tracking amplio, sombra suave, sin caja (look Caspian)
+def _draw_country(d, x, y, text, size, W, alpha, dark=False):
+    """Etiqueta de pais con tracking amplio. En tema OSCURO el texto va claro
+    (sobre tierra negra el marron es ilegible) con sombra negra de contraste."""
     txt = " ".join(list(text.upper()))   # letter-spacing manual
     fs = int(W / 34 * size)
     f = font(fs, bold=True)
     tw = d.textlength(txt, font=f)
     px, py = x - tw / 2, y - fs / 2
-    d.text((px + 2, py + 2), txt, fill=_a((30, 26, 20), 0.35 * alpha), font=f)   # sombra
-    d.text((px, py), txt, fill=_a((60, 50, 38), alpha), font=f)                  # tinta calida
+    if dark:
+        for ox, oy in ((-2, 0), (2, 0), (0, -2), (0, 2), (3, 3)):
+            d.text((px + ox, py + oy), txt, fill=_a((0, 0, 0), 0.55 * alpha), font=f)
+        d.text((px, py), txt, fill=_a((226, 230, 235), alpha), font=f)
+    else:
+        d.text((px + 2, py + 2), txt, fill=_a((30, 26, 20), 0.35 * alpha), font=f)
+        d.text((px, py), txt, fill=_a((60, 50, 38), alpha), font=f)
 
 
 def _draw_focus(d, x, y, t, alpha):

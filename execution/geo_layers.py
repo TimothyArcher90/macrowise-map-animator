@@ -97,30 +97,48 @@ def draw_lakes(img, bbox, color="#7FBEE0", alpha=210):
     return n
 
 
-def draw_coast_highlight(img, bbox, countries, color="#F08A24", width=8, glow=True):
-    """Costa/frontera de un pais resaltada en color (el trazo naranja de referencia)."""
+def draw_coast_highlight(img, bbox, countries, color="#F08A24", width=8, glow=True,
+                         min_ring_px=None, segments=None, alpha=245):
+    """Costa/frontera resaltada. Parametros para que NO quede como un borde gordo:
+      · min_ring_px: descarta islas chicas (perimetro en px menor al umbral)
+      · segments: [[lon,lat],...] tramos concretos a resaltar (playas puntuales)
+      · glow: halo suave alrededor (apagable)"""
     from PIL import Image, ImageDraw, ImageFilter
-    ge = load("countries")
     W, H = img.size
     proj = make_projector(bbox, 8, W, H)
-    names = set(countries)
     col = _hex(color)
     layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
     n = 0
-    for f in ge.get("features", []):
-        p = f.get("properties", {})
-        nm = p.get("NAME") or p.get("ADMIN") or ""
-        if nm not in names:
-            continue
-        for ring in _geoms(f):
-            if len(ring) < 3:
+
+    if segments:
+        # tramos explicitos: solo esas playas/costas, como en la referencia
+        for seg in segments:
+            pts = [tuple(proj(lo, la)) for lo, la in seg]
+            if len(pts) > 1:
+                d.line(pts, fill=col + (alpha,), width=width, joint="curve")
+                n += 1
+    else:
+        ge = load("countries")
+        names = set(countries)
+        for f in ge.get("features", []):
+            p = f.get("properties", {})
+            nm = p.get("NAME") or p.get("ADMIN") or ""
+            if nm not in names:
                 continue
-            pts = [tuple(proj(lo, la)) for lo, la in ring]
-            d.line(pts + [pts[0]], fill=col + (245,), width=width, joint="curve")
-            n += 1
+            for ring in _geoms(f):
+                if len(ring) < 3:
+                    continue
+                pts = [tuple(proj(lo, la)) for lo, la in ring]
+                if min_ring_px:
+                    per = sum(math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1])
+                              for i in range(len(pts) - 1))
+                    if per < min_ring_px:
+                        continue     # isla demasiado chica -> no la resalta
+                d.line(pts + [pts[0]], fill=col + (alpha,), width=width, joint="curve")
+                n += 1
     if glow:
-        g = layer.filter(ImageFilter.GaussianBlur(width * 1.6))
+        g = layer.filter(ImageFilter.GaussianBlur(max(2, width)))
         img.alpha_composite(g)
     img.alpha_composite(layer)
     return n
@@ -258,7 +276,10 @@ def apply_layers(basemap_path, bbox, cfg, out_path=None):
         c = cfg["coast_highlight"]
         log["coast"] = draw_coast_highlight(img, bbox, c.get("countries", []),
                                             c.get("color", "#F08A24"),
-                                            c.get("width", 8), c.get("glow", True))
+                                            c.get("width", 8), c.get("glow", True),
+                                            min_ring_px=c.get("min_ring_px"),
+                                            segments=c.get("segments"),
+                                            alpha=c.get("alpha", 245))
     out_path = out_path or basemap_path.replace(".png", "_geo.png")
     img.convert("RGB").save(out_path)
     return out_path, log
