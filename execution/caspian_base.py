@@ -83,12 +83,15 @@ def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None, theme="light")
     hs = hillshade(elev, az=315, alt=45, z_factor=z_factor)[:, :, None]
     shaded = np.clip(land * ((0.55 + 0.85 * hs) if dark else (0.74 + 0.42 * hs)), 0, 1)
 
-    # agua
+    # agua con DEGRADADO DE PROFUNDIDAD marcado (claro en la costa -> azul intenso
+    # mar adentro), como en la referencia. Curva gamma para que el cambio se note
+    # en la plataforma continental, no solo en fosas abisales.
     ws = WATER_DARK_SHALLOW if dark else WATER_SHALLOW
     wd = WATER_DARK_DEEP if dark else WATER_DEEP
-    depth = np.clip(-elev, 0, 4000) / 4000.0
-    water = (np.array(ws) / 255.0)[None, None, :] * (1 - depth[:, :, None]) + \
-            (np.array(wd) / 255.0)[None, None, :] * depth[:, :, None]
+    depth = np.clip(-elev, 0, 2500) / 2500.0
+    depth = np.power(depth, 0.45)[:, :, None]
+    water = (np.array(ws) / 255.0)[None, None, :] * (1 - depth) + \
+            (np.array(wd) / 255.0)[None, None, :] * depth
     is_water = (elev <= 0)[:, :, None]
     img = np.where(is_water, water, shaded)
 

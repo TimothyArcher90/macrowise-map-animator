@@ -139,12 +139,20 @@ def callout_box(d, x, y, text, font_obj, anchor=None, alpha=1.0,
 
 
 # --- ICONOS vectoriales (sin archivos externos): ancla, barco, avion, alerta, base
-def icon(d, x, y, kind, size=22, color=(24, 24, 28), bg=(255, 255, 255), alpha=1.0):
-    """Icono en coordenada: 'anchor' | 'ship' | 'plane' | 'alert' | 'base' | 'dot'."""
+def icon(d, x, y, kind, size=22, color=(24, 24, 28), bg=(255, 255, 255), alpha=1.0,
+         invert=False):
+    """Icono en coordenada: 'anchor' | 'ship' | 'plane' | 'alert' | 'base' | 'dot'.
+    invert=True -> disco NEGRO con simbolo BLANCO (el estilo de la referencia)."""
     s = size
+    if invert:
+        color, bg = bg, color
     if kind != "none":
+        d.ellipse([x - s * 1.3, y - s * 1.3, x + s * 1.3, y + s * 1.3],
+                  fill=_a((0, 0, 0), 0.20 * alpha))          # sombra de contacto
         d.ellipse([x - s * 1.25, y - s * 1.25, x + s * 1.25, y + s * 1.25],
-                  fill=_a(bg, alpha), outline=_a(color, alpha), width=max(2, s // 9))
+                  fill=_a(bg, alpha),
+                  outline=_a((255, 255, 255) if invert else color, alpha),
+                  width=max(2, s // 9))
     c = _a(color, alpha)
     if kind == "anchor":
         d.line([x, y - s * 0.75, x, y + s * 0.7], fill=c, width=max(3, s // 6))

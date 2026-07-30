@@ -100,9 +100,18 @@ def bake_annotated(story, bpath, bbox, zoom):
 
 
 # ---------- helpers de dibujo ----------
-def font(sz, bold=True):
+def font(sz, bold=True, style=None):
+    """style: None=sans | 'serif_italic'=serif cursiva (nombres de ciudad, ref.
+    Caspian) | 'serif'=serif recta."""
     from PIL import ImageFont
-    for name in (("arialbd.ttf" if bold else "arial.ttf"), "Arial.ttf", "DejaVuSans-Bold.ttf"):
+    if style == "serif_italic":
+        names = ["georgiai.ttf", "timesi.ttf", "GeorgiaItalic.ttf", "DejaVuSerif-Italic.ttf"]
+    elif style == "serif":
+        names = ["georgia.ttf", "times.ttf", "DejaVuSerif.ttf"]
+    else:
+        names = [("arialbd.ttf" if bold else "arial.ttf"), "Arial.ttf",
+                 "DejaVuSans-Bold.ttf"]
+    for name in names:
         try:
             return ImageFont.truetype(name, sz)
         except Exception:
@@ -261,6 +270,12 @@ def render(story, fmt, out_mp4):
         # ventana de recorte en px del basemap
         crop_w = span / lon_span * bw
         crop_h = crop_w * H / W
+        # Con TILT se recorta MAS area: lo lejano (arriba) se comprime en
+        # perspectiva, asi que hace falta mas mapa del que se ve. Sin esto la
+        # inclinacion no se nota (el mapa queda "plano" o se ve su borde).
+        if tilt > 0:
+            crop_w *= (1.0 + 0.85 * tilt)
+            crop_h *= (1.0 + 0.55 * tilt)
         ccx, ccy = proj(clon, clat)
         left = ccx - crop_w / 2
         top = ccy - crop_h / 2
@@ -394,7 +409,8 @@ def render(story, fmt, out_mp4):
                        abs(ic.get("lat", 1e9) - c["lat"]) < 1e-4:
                         off = int(W * ic.get("size", 0.012) * 1.6)
                         break
-                OV.city_dot(d, sx, sy, c.get("name", ""), font(int(W / 62), bold=False),
+                OV.city_dot(d, sx, sy, c.get("name", ""),
+                            font(int(W / 56), style=story.get("city_font", "serif_italic")),
                             alpha=ca, r=int(W / 200), offset=off,
                             side=c.get("side", "right"),
                             ink=_hexc(c.get("ink", "#28241E")) if theme != "dark" else (245, 246, 248),
@@ -411,7 +427,8 @@ def render(story, fmt, out_mp4):
                 OV.icon(d, sx, sy, ic.get("kind", "dot"),
                         size=int(W * ic.get("size", 0.012)),
                         color=_hexc(ic.get("color", "#1A1A22")),
-                        bg=_hexc(ic.get("bg", "#FFFFFF")), alpha=ia)
+                        bg=_hexc(ic.get("bg", "#FFFFFF")), alpha=ia,
+                        invert=ic.get("invert", story.get("icons_invert", True)))
 
         # CAJAS DE CALL-OUT blancas con linea lider (referencia "Mountains/Urban areas")
         for co in story.get("callouts", []):
@@ -516,26 +533,30 @@ def _project_point(coeffs, x, y):
 
 
 def apply_tilt(frame_rgba, W, H, tilt, sky_top, sky_bot):
-    """Inclina el mapa en 2.5D (rig rotation_x) + cielo/atmosfera arriba."""
+    """Inclina el mapa en 2.5D (rig rotation_x) SIN mostrar el borde del mapa.
+
+    Clave: el mapa recortado abarca MAS area de la que se ve, asi que al inclinar
+    el cuadro sigue lleno de mapa (nada de 'mesa' flotando con cielo alrededor).
+    La perspectiva se aplica mapeando el cuadro completo a un trapecio que se
+    EXTIENDE por fuera del lienzo — el horizonte queda fuera de cuadro."""
     from PIL import Image
-    inset = 0.06 + 0.22 * tilt        # convergencia de perspectiva arriba
-    horizon = 0.10 + 0.22 * tilt      # el mapa arranca mas abajo (cielo arriba)
-    hy = H * horizon
-    dst = [(W * inset, hy), (W * (1 - inset), hy), (W, H), (0, H)]
+    # el trapecio se abre por fuera del lienzo: arriba mas angosto pero aun asi
+    # mas ancho que W, y los lados de abajo se salen -> nunca se ve el borde.
+    # El frame que entra ya trae MAS area de mapa (crop expandido). Su borde
+    # superior completo se mapea al ancho del cuadro (lo lejano, comprimido) y su
+    # borde inferior se abre POR FUERA del lienzo (lo cercano, ampliado).
+    # Perspectiva fuerte: el borde inferior se abre MUCHO por fuera del lienzo y
+    # el superior se levanta por encima -> compresion progresiva hacia el fondo
+    # (lo lejano se apelmaza arriba), que es lo que hace legible la inclinacion.
+    bulge = 1.9 * tilt
+    rise = 0.34 * tilt
+    dst = [(0, -H * rise), (W, -H * rise),
+           (W * (1 + bulge), H), (-W * bulge, H)]
     src = [(0, 0), (W, 0), (W, H), (0, H)]
     coeffs = _find_coeffs(dst, src)
     warped = frame_rgba.transform((W, H), Image.PERSPECTIVE, coeffs, Image.BICUBIC)
     fwd = _find_coeffs(src, dst)   # directa: punto del mapa plano -> mapa inclinado
-    # cielo: gradiente vertical
-    import numpy as np
-    grad = np.zeros((H, W, 3), dtype="uint8")
-    tcol = np.array(sky_top); bcol = np.array(sky_bot)
-    for yy in range(H):
-        f = yy / max(1, H - 1)
-        grad[yy, :, :] = (tcol * (1 - f) + bcol * f).astype("uint8")
-    sky = Image.fromarray(grad, "RGB").convert("RGBA")
-    sky.alpha_composite(warped)
-    return sky, fwd
+    return warped, fwd
 
 
 def _draw_country(d, x, y, text, size, W, alpha, dark=False):
@@ -546,13 +567,17 @@ def _draw_country(d, x, y, text, size, W, alpha, dark=False):
     f = font(fs, bold=True)
     tw = d.textlength(txt, font=f)
     px, py = x - tw / 2, y - fs / 2
+    # BISELADO 3D (como el "TAIWAN" gris de la referencia): sombra proyectada en
+    # diagonal + realce claro arriba-izquierda + cuerpo del texto encima.
+    depth = max(3, int(fs * 0.055))
     if dark:
-        for ox, oy in ((-2, 0), (2, 0), (0, -2), (0, 2), (3, 3)):
-            d.text((px + ox, py + oy), txt, fill=_a((0, 0, 0), 0.55 * alpha), font=f)
-        d.text((px, py), txt, fill=_a((226, 230, 235), alpha), font=f)
+        body, hi, sh = (176, 180, 186), (232, 236, 240), (8, 10, 14)
     else:
-        d.text((px + 2, py + 2), txt, fill=_a((30, 26, 20), 0.35 * alpha), font=f)
-        d.text((px, py), txt, fill=_a((60, 50, 38), alpha), font=f)
+        body, hi, sh = (86, 78, 66), (232, 226, 214), (24, 20, 14)
+    for k in range(depth, 0, -1):
+        d.text((px + k, py + k), txt, fill=_a(sh, 0.42 * alpha), font=f)
+    d.text((px - 1.5, py - 1.5), txt, fill=_a(hi, 0.55 * alpha), font=f)
+    d.text((px, py), txt, fill=_a(body, alpha), font=f)
 
 
 def _draw_focus(d, x, y, t, alpha):

@@ -10,15 +10,15 @@
   "theme": "dark",
   "video_zoom": 8,
   "duration": 20,
-  "tilt_deg": 0,
-  "dof": 0.5,
+  "tilt_deg": 34,
+  "dof": 0.62,
   "dof_mode": "tiltshift",
-  "dof_band": 0.26,
-  "dof_focus": 0.52,
+  "dof_band": 0.22,
+  "dof_focus": 0.5,
   "rivers": {
-    "color": "#3FA9E8",
-    "width": 2,
-    "alpha": 190
+    "color": "#35C4F0",
+    "width": 3,
+    "alpha": 225
   },
   "lakes": {
     "color": "#3FA9E8",
@@ -29,10 +29,10 @@
       "Taiwan"
     ],
     "color": "#F08A24",
-    "width": 3,
+    "width": 4,
     "glow": false,
     "min_ring_px": 900,
-    "alpha": 230
+    "alpha": 235
   },
   "country_colors": {},
   "map_labels": [
@@ -185,5 +185,6 @@
       "lat": 24.2,
       "span": 8.0
     }
-  ]
+  ],
+  "icons_invert": true
 }
