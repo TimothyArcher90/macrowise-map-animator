@@ -168,6 +168,9 @@ def render(story, fmt, out_mp4):
     sky_top = tuple(story.get("sky_top", [22, 28, 38]))
     sky_bot = tuple(story.get("sky_bot", [58, 70, 86]))
     dof = float(story.get("dof", 0))     # 0 = sin desenfoque, ~0.5 = documental suave
+    dof_mode = story.get("dof_mode", "radial")   # 'tiltshift' = banda horizontal nitida
+    dof_band = float(story.get("dof_band", 0.20))   # alto de la franja en foco (0-1)
+    dof_focus = float(story.get("dof_focus", 0.55)) # posicion vertical del foco (0-1)
 
     # el nombre del cache incluye bbox + tintes: si cambian, se regenera
     _sig = hashlib.md5(json.dumps([bbox, story.get("country_colors")],
@@ -178,7 +181,8 @@ def render(story, fmt, out_mp4):
         if not os.path.exists(bpath):
             from caspian_base import build_caspian
             print("generando base Caspian (terreno claro + tintes de pais)...")
-            build_caspian(bbox, zoom, bpath, tints=story.get("country_colors"))
+            build_caspian(bbox, zoom, bpath, tints=story.get("country_colors"),
+                          theme=theme)
     elif source == "vector":
         # estilo vector plano: colores precisos por pais + borde (look manual GeoLayers)
         if not os.path.exists(bpath):
@@ -200,6 +204,20 @@ def render(story, fmt, out_mp4):
             print("aplicando mascara por pais...")
             hl_path = apply_highlight(bpath, bbox, story["highlight"])
         bpath = hl_path
+
+    # CAPAS GEOGRAFICAS horneadas: rios, lagos, urbano, fronteras, costa, extrusion
+    _geo_cfg = {k: story[k] for k in
+                ("rivers", "lakes", "urban", "borders", "internal_borders",
+                 "coast_highlight", "extrude") if story.get(k)}
+    if _geo_cfg:
+        _gsig = hashlib.md5(json.dumps(_geo_cfg, sort_keys=True).encode()).hexdigest()[:8]
+        gpath = bpath.replace(".png", "_geo%s.png" % _gsig)
+        if not os.path.exists(gpath):
+            from geo_layers import apply_layers
+            print("horneando capas geograficas: %s" % ", ".join(_geo_cfg))
+            gpath, glog = apply_layers(bpath, bbox, _geo_cfg, gpath)
+            print("   ->", glog)
+        bpath = gpath
 
     # RELIEVE 3D opcional (hillshade desde elevacion gratis)
     if story.get("relief"):
@@ -255,14 +273,22 @@ def render(story, fmt, out_mp4):
             from PIL import ImageFilter as _IF
             import numpy as _np
             blurred = frame.filter(_IF.GaussianBlur(dof * 9.0))
-            if _DOF_MASK.get("k") is None or _DOF_MASK.get("wh") != (W, H):
+            _key = (W, H, dof_mode, round(dof_band, 3), round(dof_focus, 3))
+            if _DOF_MASK.get("key") != _key:
                 yy, xx = _np.mgrid[0:H, 0:W]
-                nx = (xx - W / 2) / (W / 2)
-                ny = (yy - H / 2) / (H / 2)
-                rad = _np.sqrt(nx * nx + ny * ny) / 1.414
-                k = _np.clip((rad - 0.42) / 0.5, 0, 1) ** 1.6   # centro nitido, bordes suaves
+                if dof_mode == "tiltshift":
+                    # BANDA horizontal nitida (mira el look de mapas 3D inclinados):
+                    # arriba y abajo desenfocados, franja del medio en foco.
+                    ny = (yy / H - dof_focus) / max(0.02, dof_band)
+                    k = _np.clip(_np.abs(ny) - 1.0, 0, 1)
+                    k = _np.clip(k / 1.2, 0, 1) ** 1.3
+                else:
+                    nx = (xx - W / 2) / (W / 2)
+                    ny2 = (yy - H / 2) / (H / 2)
+                    rad = _np.sqrt(nx * nx + ny2 * ny2) / 1.414
+                    k = _np.clip((rad - 0.42) / 0.5, 0, 1) ** 1.6
                 _DOF_MASK["k"] = Image.fromarray((k * 255).astype("uint8"), "L")
-                _DOF_MASK["wh"] = (W, H)
+                _DOF_MASK["key"] = _key
             frame = Image.composite(blurred, frame, _DOF_MASK["k"])
 
         # INCLINACION 2.5D del MAPA primero; las letras van ENCIMA (no se deforman)
@@ -334,6 +360,35 @@ def render(story, fmt, out_mp4):
             if -60 < sx < W + 60 and -60 < sy < H + 60:
                 OV.city_dot(d, sx, sy, c.get("name", ""), font(int(W / 62), bold=False),
                             alpha=ca, r=int(W / 200))
+
+        # ICONOS en coordenadas (ancla, barco, avion, alerta, base)
+        for ic in story.get("icons", []):
+            ia = max(0.0, min(1.0, (t - ic.get("t", 0)) / 0.4)) if ic.get("t") else 1.0
+            if ia <= 0:
+                continue
+            sx, sy = screen(ic["lon"], ic["lat"])
+            if -60 < sx < W + 60 and -60 < sy < H + 60:
+                OV.icon(d, sx, sy, ic.get("kind", "dot"),
+                        size=int(W * ic.get("size", 0.012)),
+                        color=_hexc(ic.get("color", "#1A1A22")),
+                        bg=_hexc(ic.get("bg", "#FFFFFF")), alpha=ia)
+
+        # CAJAS DE CALL-OUT blancas con linea lider (referencia "Mountains/Urban areas")
+        for co in story.get("callouts", []):
+            oa = max(0.0, min(1.0, (t - co.get("t", 0)) / 0.5)) if co.get("t") else 1.0
+            if oa <= 0:
+                continue
+            ax, ay = screen(co["lon"], co["lat"])
+            bx = ax + co.get("dx", 0.10) * W
+            by = ay + co.get("dy", -0.12) * H
+            mgx, mgy = W * 0.13, H * 0.10
+            bx = max(mgx, min(W - mgx, bx))
+            by = max(mgy, min(H - mgy, by))
+            OV.callout_box(d, bx, by, co["text"], font(int(W / co.get("fs", 52))),
+                           anchor=(ax, ay), alpha=oa,
+                           bg=_hexc(co.get("bg", "#FFFFFF")),
+                           ink=_hexc(co.get("ink", "#18181C")),
+                           lead=_hexc(co.get("lead", "#FFFFFF")))
 
         # PINS CON FOTO DE LIDER: recorte circular + aro + linea al punto del mapa
         for lp in story.get("leaders", []):
@@ -517,6 +572,21 @@ def main():
     a = ap.parse_args()
     with open(a.story, encoding="utf-8") as f:
         story = json.load(f)
+    # nombres de lugar -> coordenadas ("place": "Fuzhou")
+    try:
+        from places import resolve_story
+        story = resolve_story(story)
+    except Exception as ex:
+        print("[places] aviso:", ex)
+    # marca: rellena lo que el story no defina explicitamente
+    bpath_brand = os.path.join(HERE, "..", "brand.json")
+    if os.path.exists(bpath_brand):
+        with open(bpath_brand, encoding="utf-8") as f:
+            brand = json.load(f)
+        story.setdefault("_brand", brand)
+        if "logo" not in story:
+            story["logo"] = brand.get("logo", {}).get("dark")
+        story.setdefault("logo_opacity", brand.get("logo", {}).get("opacity", 0.5))
     render(story, a.format, a.out)
 
 

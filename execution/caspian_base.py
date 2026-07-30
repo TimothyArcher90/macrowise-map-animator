@@ -37,11 +37,11 @@ WATER_SHALLOW = (168, 200, 216)
 WATER_DEEP = (120, 165, 190)
 
 
-def _ramp(elev):
+def _ramp(elev, stops=None):
     import numpy as np
     h, w = elev.shape
     out = np.zeros((h, w, 3), dtype="float64")
-    stops = HYPSO
+    stops = stops or HYPSO
     e = np.clip(elev, 0, 6000)
     for i in range(len(stops) - 1):
         a_h, a_c = stops[i]
@@ -55,24 +55,40 @@ def _ramp(elev):
     return out
 
 
-def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None):
+# Tema OSCURO: tierra casi negra con relieve sutil + oceano azul brillante
+HYPSO_DARK = [
+    (0,    (26, 30, 34)),
+    (400,  (30, 35, 40)),
+    (1200, (38, 44, 50)),
+    (2500, (48, 55, 62)),
+    (4200, (64, 72, 80)),
+    (5500, (96, 104, 112)),
+]
+WATER_DARK_SHALLOW = (58, 158, 224)
+WATER_DARK_DEEP = (28, 118, 190)
+
+
+def build_caspian(bbox, zoom, out_path, z_factor=2.6, tints=None, theme="light"):
     """Terreno claro estilo Caspian + tinte de pais semi-transparente ENCIMA
     (el terreno se ve a traves del color). tints: {pais: '#hex'} o {pais: ['#hex', alpha]}."""
     import numpy as np
     from PIL import Image, ImageFilter, ImageDraw
+    dark = (theme == "dark")
     elev = _elevation(bbox, min(zoom, 10))
-    land = _ramp(elev) / 255.0
+    land = _ramp(elev, HYPSO_DARK if dark else None) / 255.0
     lum = land.mean(axis=2, keepdims=True)
     land = land * 0.85 + lum * 0.15   # leve desaturacion
 
-    # hillshade SUAVE (terreno de papel, no montaña dura)
+    # hillshade: en oscuro va mas marcado (la textura es lo unico que se ve)
     hs = hillshade(elev, az=315, alt=45, z_factor=z_factor)[:, :, None]
-    shaded = np.clip(land * (0.74 + 0.42 * hs), 0, 1)
+    shaded = np.clip(land * ((0.55 + 0.85 * hs) if dark else (0.74 + 0.42 * hs)), 0, 1)
 
-    # agua azul plana
+    # agua
+    ws = WATER_DARK_SHALLOW if dark else WATER_SHALLOW
+    wd = WATER_DARK_DEEP if dark else WATER_DEEP
     depth = np.clip(-elev, 0, 4000) / 4000.0
-    water = (np.array(WATER_SHALLOW) / 255.0)[None, None, :] * (1 - depth[:, :, None]) + \
-            (np.array(WATER_DEEP) / 255.0)[None, None, :] * depth[:, :, None]
+    water = (np.array(ws) / 255.0)[None, None, :] * (1 - depth[:, :, None]) + \
+            (np.array(wd) / 255.0)[None, None, :] * depth[:, :, None]
     is_water = (elev <= 0)[:, :, None]
     img = np.where(is_water, water, shaded)
 

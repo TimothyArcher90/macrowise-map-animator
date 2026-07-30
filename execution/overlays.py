@@ -99,6 +99,77 @@ def pin(d, x, y, color, font_obj=None, label=None, r=34, alpha=1.0):
         d.text((x - tw / 2, y + r + 8), label, fill=_a((30, 28, 24), alpha), font=font_obj)
 
 
+def callout_box(d, x, y, text, font_obj, anchor=None, alpha=1.0,
+                bg=(255, 255, 255), ink=(24, 24, 28), pad=16, radius=10,
+                shadow=True, lead=(255, 255, 255), lead_w=3):
+    """Caja blanca de call-out con linea lider curvada al punto del mapa.
+    Es el elemento de 'Mountains / Urban areas / Rough seas' de la referencia."""
+    lines = text.split("\n")
+    fs = getattr(font_obj, "size", 30)
+    tw = max(d.textlength(ln, font=font_obj) for ln in lines)
+    th = fs * len(lines) + (len(lines) - 1) * 6
+    x0, y0 = x - tw / 2 - pad, y - th / 2 - pad * 0.7
+    x1, y1 = x + tw / 2 + pad, y + th / 2 + pad * 0.7
+
+    # linea lider: sale del borde mas cercano de la caja hacia el punto
+    if anchor is not None:
+        ax, ay = anchor
+        ex = min(max(ax, x0 + 8), x1 - 8)
+        ey = y1 if ay > y1 else (y0 if ay < y0 else y)
+        d.line([ex, ey, ax, ay], fill=_a(lead, 0.95 * alpha), width=lead_w)
+        d.ellipse([ax - 5, ay - 5, ax + 5, ay + 5], fill=_a(lead, alpha))
+
+    if shadow:
+        d.rounded_rectangle([x0 + 5, y0 + 6, x1 + 5, y1 + 6], radius=radius,
+                            fill=_a((0, 0, 0), 0.22 * alpha))
+    d.rounded_rectangle([x0, y0, x1, y1], radius=radius, fill=_a(bg, 0.97 * alpha))
+    cy = y0 + pad * 0.7
+    for ln in lines:
+        lw = d.textlength(ln, font=font_obj)
+        d.text((x - lw / 2, cy), ln, fill=_a(ink, alpha), font=font_obj)
+        cy += fs + 6
+
+
+# --- ICONOS vectoriales (sin archivos externos): ancla, barco, avion, alerta, base
+def icon(d, x, y, kind, size=22, color=(24, 24, 28), bg=(255, 255, 255), alpha=1.0):
+    """Icono en coordenada: 'anchor' | 'ship' | 'plane' | 'alert' | 'base' | 'dot'."""
+    s = size
+    if kind != "none":
+        d.ellipse([x - s * 1.25, y - s * 1.25, x + s * 1.25, y + s * 1.25],
+                  fill=_a(bg, alpha), outline=_a(color, alpha), width=max(2, s // 9))
+    c = _a(color, alpha)
+    if kind == "anchor":
+        d.line([x, y - s * 0.75, x, y + s * 0.7], fill=c, width=max(3, s // 6))
+        d.line([x - s * 0.42, y - s * 0.34, x + s * 0.42, y - s * 0.34], fill=c, width=max(3, s // 7))
+        d.arc([x - s * 0.62, y - s * 0.1, x + s * 0.62, y + s * 0.85], 20, 160, fill=c, width=max(3, s // 6))
+        d.ellipse([x - s * 0.16, y - s * 0.96, x + s * 0.16, y - s * 0.64], outline=c, width=max(2, s // 8))
+    elif kind == "ship":
+        d.polygon([(x - s * 0.7, y + s * 0.1), (x + s * 0.7, y + s * 0.1),
+                   (x + s * 0.42, y + s * 0.55), (x - s * 0.42, y + s * 0.55)], fill=c)
+        d.rectangle([x - s * 0.34, y - s * 0.45, x + s * 0.18, y + s * 0.06], fill=c)
+        d.line([x + s * 0.4, y - s * 0.6, x + s * 0.4, y + s * 0.08], fill=c, width=max(2, s // 9))
+    elif kind == "plane":
+        d.polygon([(x, y - s * 0.8), (x + s * 0.18, y - s * 0.1), (x + s * 0.8, y + s * 0.28),
+                   (x + s * 0.8, y + s * 0.46), (x + s * 0.14, y + s * 0.3),
+                   (x + s * 0.1, y + s * 0.62), (x + s * 0.36, y + s * 0.82),
+                   (x + s * 0.36, y + s * 0.94), (x, y + s * 0.78),
+                   (x - s * 0.36, y + s * 0.94), (x - s * 0.36, y + s * 0.82),
+                   (x - s * 0.1, y + s * 0.62), (x - s * 0.14, y + s * 0.3),
+                   (x - s * 0.8, y + s * 0.46), (x - s * 0.8, y + s * 0.28),
+                   (x - s * 0.18, y - s * 0.1)], fill=c)
+    elif kind == "alert":
+        d.polygon([(x, y - s * 0.78), (x + s * 0.78, y + s * 0.6), (x - s * 0.78, y + s * 0.6)],
+                  fill=c)
+        d.line([x, y - s * 0.24, x, y + s * 0.2], fill=_a(bg, alpha), width=max(3, s // 6))
+        d.ellipse([x - s * 0.09, y + s * 0.3, x + s * 0.09, y + s * 0.46], fill=_a(bg, alpha))
+    elif kind == "base":
+        d.rectangle([x - s * 0.6, y - s * 0.45, x + s * 0.6, y + s * 0.5], fill=c)
+        d.polygon([(x - s * 0.75, y - s * 0.45), (x, y - s * 0.95), (x + s * 0.75, y - s * 0.45)],
+                  fill=c)
+    elif kind == "dot":
+        d.ellipse([x - s * 0.45, y - s * 0.45, x + s * 0.45, y + s * 0.45], fill=c)
+
+
 _PHOTO_CACHE = {}
 
 

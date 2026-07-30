@@ -1,0 +1,51 @@
+{
+  "_comment": "Identidad MacroWise aplicada a TODOS los mapas. Cambiar aca = cambia en todo.",
+  "name": "MacroWise",
+  "palette": {
+    "gold": "#C9A84C",
+    "teal": "#50B5A2",
+    "purple": "#73247D",
+    "ink": "#1A1A26",
+    "ink2": "#3E3E50",
+    "surface": "#FFFFFF",
+    "background": "#F3F3F5",
+    "stone": "#CBC6BC",
+    "warm_black": "#1A1A17"
+  },
+  "roles": {
+    "accent": "#C9A84C",
+    "callout_bg": "#FFFFFF",
+    "callout_ink": "#1A1A26",
+    "callout_lead": "#FFFFFF",
+    "city_dot": "#C9A84C",
+    "city_ink": "#1A1A26",
+    "arrow": "#1A1A26",
+    "banner_hl": "#C9A84C",
+    "banner_ink": "#1A1A26",
+    "date_bg": "#1A1A26",
+    "date_ink": "#F3F3F5",
+    "lower_bar": "#C9A84C",
+    "lower_panel": "#1A1A26",
+    "lower_ink": "#F3F3F5",
+    "highlight_country": "#C9A84C",
+    "coast_highlight": "#C9A84C"
+  },
+  "fonts": {
+    "display": "Geist",
+    "body": "Geist",
+    "mono": "Geist Mono",
+    "fallback_bold": "arialbd.ttf",
+    "fallback_regular": "arial.ttf"
+  },
+  "logo": {
+    "dark": "C:/Users/tante/Downloads/NUEVA IMAGEN MW-20260727T163921Z-1-001/NUEVA IMAGEN MW/LOGO MW NEGRO.png",
+    "light": "C:/Users/tante/Downloads/NUEVA IMAGEN MW-20260727T163921Z-1-001/NUEVA IMAGEN MW/LOGO MW BLANCO.png",
+    "opacity": 0.5,
+    "width_frac": 0.105
+  },
+  "video": {
+    "fps": 30,
+    "grade": "eq=contrast=1.03:saturation=1.00:gamma=0.995,unsharp=5:5:0.35:5:5:0.0,vignette=PI/8,noise=alls=2",
+    "crf": 21
+  }
+}

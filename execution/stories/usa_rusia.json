@@ -1,0 +1,43 @@
+{
+  "_comment": "USA vs Rusia estilo Caspian: terreno claro + tintes Multiply + pins con fotos de lideres + flechas + ciudades + profundidad de campo.",
+  "bbox": [-110.0, 22.0, 65.0, 68.0],
+  "basemap_source": "caspian",
+  "video_zoom": 5,
+  "theme": "light",
+  "duration": 20,
+  "tilt_deg": 0,
+  "dof": 0.45,
+  "country_colors": {
+    "United States of America": ["#7BA7D9", 0.5],
+    "Russia": ["#E86B6B", 0.5]
+  },
+  "logo": "C:/Users/tante/Downloads/NUEVA IMAGEN MW-20260727T163921Z-1-001/NUEVA IMAGEN MW/LOGO MW NEGRO.png",
+  "banners": [
+    { "text": "Dos potencias, un tablero", "in": 1.2, "out": 6.5, "y": 0.40 }
+  ],
+  "dates": [ { "text": "2026", "in": 0.6, "out": 19.5 } ],
+  "map_labels": [
+    { "lon": -98.0, "lat": 39.0, "text": "ESTADOS UNIDOS", "size": 0.9, "alpha": 0.85 },
+    { "lon": 45.0,  "lat": 58.0, "text": "RUSIA",          "size": 1.1, "alpha": 0.85 }
+  ],
+  "cities": [
+    { "lon": -77.04, "lat": 38.90, "name": "Washington", "t": 4 },
+    { "lon": 37.62,  "lat": 55.75, "name": "Moscú",      "t": 6 }
+  ],
+  "leaders": [
+    { "lon": -77.04, "lat": 38.90, "photo": "D:/IA - PROYECTS 2026/macrowise-map-animator/assets/leaders/Donald Trump.jpg",
+      "label": "TRUMP",  "t": 5, "dx": -0.06, "dy": -0.20, "size": 0.052 },
+    { "lon": 37.62,  "lat": 55.75, "photo": "D:/IA - PROYECTS 2026/macrowise-map-animator/assets/leaders/Vladimir Putin.webp",
+      "label": "PUTIN",  "t": 7, "dx": 0.05,  "dy": -0.20, "size": 0.052 }
+  ],
+  "arrows": [
+    { "from": [-77.04, 38.90], "to": [37.62, 55.75], "t": [9, 13],
+      "color": "#1A1A22", "width": 7, "curve": 0.22 }
+  ],
+  "camera": [
+    { "t": 0.0,  "lon": -25.0, "lat": 47.0, "span": 165.0, "dwell": 1.4 },
+    { "t": 7.0,  "lon": -35.0, "lat": 45.0, "span": 130.0, "dwell": 1.2 },
+    { "t": 13.0, "lon": -10.0, "lat": 48.0, "span": 120.0, "dwell": 1.2 },
+    { "t": 20.0, "lon": -25.0, "lat": 47.0, "span": 150.0 }
+  ]
+}
